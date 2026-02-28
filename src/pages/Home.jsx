@@ -389,10 +389,10 @@ export default function Home() {
           <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
             <div className="flex -space-x-4 shrink-0">
               {[
-                'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop&crop=face',
-                'https://images.unsplash.com/photo-1594381898411-846e7d193883?w=100&h=100&fit=crop&crop=face',
-                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-                'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=face',
+                '/images/rafaela-silva.png',
+                '/images/chrystian-silva.png',
+                '/images/joao-derly.png',
+                '/images/guilherme-oliveira.png',
               ].map((src, i) => (
                 <motion.img
                   key={i}

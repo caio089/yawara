@@ -55,30 +55,26 @@ export default function ProductCard({ product, index }) {
         </div>
       </div>
 
-      <div className="p-5 flex flex-col flex-1">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="font-medium text-sm text-kuro leading-snug">{product.name}</h3>
-        </div>
+      <div className="p-3 sm:p-5 flex flex-col flex-1">
+        <h3 className="font-medium text-xs sm:text-sm text-kuro leading-snug mb-1">{product.name}</h3>
 
-        <p className="text-[10px] font-jp text-kuro/30 tracking-wider mb-3">
+        <p className="text-[10px] font-jp text-kuro/30 tracking-wider mb-2 sm:mb-3">
           {product.nameJp || product.name_jp}
         </p>
 
-        <p className="text-xs text-kuro/50 leading-relaxed mb-4 line-clamp-2 flex-1">
+        <p className="text-[10px] sm:text-xs text-kuro/50 leading-relaxed mb-3 sm:mb-4 line-clamp-2 flex-1 hidden sm:block">
           {product.description}
         </p>
 
-        <div className="flex items-center justify-between mt-auto pt-4 border-t border-washi-dark">
-          <div>
-            <span className="text-lg font-bold text-kuro">
-              R$ {product.price.toFixed(2)}
-            </span>
-          </div>
+        <div className="mt-auto pt-3 sm:pt-4 border-t border-washi-dark space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
+          <span className="text-base sm:text-lg font-bold text-kuro block">
+            R$ {product.price.toFixed(2)}
+          </span>
 
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={handleAdd}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all duration-300 ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-medium transition-all duration-300 ${
               added
                 ? 'bg-green-600 text-shiro'
                 : 'bg-kuro text-shiro hover:bg-aka'
@@ -86,12 +82,12 @@ export default function ProductCard({ product, index }) {
           >
             {added ? (
               <>
-                <Check size={14} />
+                <Check size={12} className="sm:w-3.5 sm:h-3.5" />
                 Adicionado
               </>
             ) : (
               <>
-                <ShoppingCart size={14} />
+                <ShoppingCart size={12} className="sm:w-3.5 sm:h-3.5" />
                 Adicionar
               </>
             )}

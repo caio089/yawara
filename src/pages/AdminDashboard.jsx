@@ -91,24 +91,24 @@ function ProductForm({ initial, onSave, onCancel, title }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-kuro/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-kuro/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4"
       onClick={onCancel}
     >
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-washi rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-washi rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl"
       >
-        <div className="sticky top-0 bg-washi border-b border-washi-dark px-6 py-4 flex items-center justify-between z-10">
-          <h3 className="text-lg font-bold text-kuro">{title}</h3>
+        <div className="sticky top-0 bg-washi border-b border-washi-dark px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-10">
+          <h3 className="text-base sm:text-lg font-bold text-kuro">{title}</h3>
           <button onClick={onCancel} className="p-2 hover:bg-kuro/5 rounded-lg transition-colors">
             <X size={18} className="text-kuro/50" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
           <Field label="Nome *" value={form.name} onChange={(v) => setForm({ ...form, name: v })} placeholder="Ex: Judogi Elite" required />
 
           <div>
@@ -144,22 +144,22 @@ function ProductForm({ initial, onSave, onCancel, title }) {
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-washi-dark rounded-xl p-6 text-center cursor-pointer hover:border-aka/30 hover:bg-aka/5 transition-all"
+              className="border-2 border-dashed border-washi-dark rounded-xl p-4 sm:p-6 text-center cursor-pointer hover:border-aka/30 hover:bg-aka/5 transition-all"
             >
               {imagePreview ? (
-                <div className="flex items-center gap-4">
-                  <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-lg" />
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-kuro">{imageFile?.name || 'Imagem atual'}</p>
-                    <p className="text-xs text-kuro/40 mt-1">Clique para trocar</p>
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <img src={imagePreview} alt="Preview" className="w-14 h-14 sm:w-20 sm:h-20 object-cover rounded-lg shrink-0" />
+                  <div className="text-left min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-kuro truncate">{imageFile?.name || 'Imagem atual'}</p>
+                    <p className="text-[10px] sm:text-xs text-kuro/40 mt-1">Toque para trocar</p>
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center gap-2 py-2">
-                  <div className="w-12 h-12 bg-washi rounded-xl flex items-center justify-center">
-                    <Upload size={20} className="text-kuro/30" />
+                <div className="flex flex-col items-center gap-2 py-1 sm:py-2">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-washi rounded-xl flex items-center justify-center">
+                    <Upload size={18} className="text-kuro/30" />
                   </div>
-                  <p className="text-sm text-kuro/50">Clique para selecionar uma imagem</p>
+                  <p className="text-xs sm:text-sm text-kuro/50">Toque para selecionar uma imagem</p>
                   <p className="text-[10px] text-kuro/30">PNG, JPG ou WEBP</p>
                 </div>
               )}
@@ -209,16 +209,16 @@ function ProductForm({ initial, onSave, onCancel, title }) {
             </div>
           )}
 
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onCancel} className="flex-1 px-6 py-3.5 border border-washi-dark rounded-xl text-sm font-medium text-kuro/60 hover:bg-kuro/5 transition-colors">
+          <div className="flex gap-3 pt-2 sticky bottom-0 bg-washi pb-2 -mx-4 sm:-mx-6 px-4 sm:px-6 border-t border-washi-dark pt-4">
+            <button type="button" onClick={onCancel} className="flex-1 px-4 sm:px-6 py-3 sm:py-3.5 border border-washi-dark rounded-xl text-xs sm:text-sm font-medium text-kuro/60 hover:bg-kuro/5 transition-colors">
               Cancelar
             </button>
             <button
               type="submit"
               disabled={saving || (!imagePreview && !imageFile)}
-              className="flex-1 px-6 py-3.5 bg-aka hover:bg-aka-light text-shiro rounded-xl text-sm font-medium transition-colors shadow-lg shadow-aka/20 flex items-center justify-center gap-2 disabled:opacity-50"
+              className="flex-1 px-4 sm:px-6 py-3 sm:py-3.5 bg-aka hover:bg-aka-light text-shiro rounded-xl text-xs sm:text-sm font-medium transition-colors shadow-lg shadow-aka/20 flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <Save size={16} />
+              <Save size={14} className="sm:w-4 sm:h-4" />
               {saving ? 'Salvando...' : 'Salvar'}
             </button>
           </div>
@@ -273,27 +273,27 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-washi">
       <header className="bg-kuro sticky top-0 z-40 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <img src="/images/logo-yawara.png" alt="Yawara" className="w-8 h-8" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <img src="/images/logo-yawara.png" alt="Yawara" className="w-7 h-7 sm:w-8 sm:h-8" />
             <div>
-              <h1 className="text-shiro font-bold text-sm tracking-wide">Painel Admin</h1>
-              <p className="text-shiro/30 text-[10px]">Yawara Japan</p>
+              <h1 className="text-shiro font-bold text-xs sm:text-sm tracking-wide">Painel Admin</h1>
+              <p className="text-shiro/30 text-[10px] hidden sm:block">Yawara Japan</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/')} className="text-shiro/40 hover:text-shiro text-xs transition-colors">Ver site</button>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button onClick={() => navigate('/')} className="text-shiro/40 hover:text-shiro text-[10px] sm:text-xs transition-colors">Ver site</button>
             <button
               onClick={() => { logout(); navigate('/admin/login') }}
-              className="flex items-center gap-2 px-4 py-2 bg-shiro/5 hover:bg-shiro/10 text-shiro/60 hover:text-shiro rounded-lg text-xs transition-all"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-shiro/5 hover:bg-shiro/10 text-shiro/60 hover:text-shiro rounded-lg text-[10px] sm:text-xs transition-all"
             >
-              <LogOut size={14} /> Sair
+              <LogOut size={12} className="sm:w-3.5 sm:h-3.5" /> Sair
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           {stats.map((stat) => {
             const Icon = stat.icon
@@ -310,27 +310,27 @@ export default function AdminDashboard() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-shiro rounded-2xl border border-washi-dark overflow-hidden">
-          <div className="p-6 border-b border-washi-dark flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="p-4 sm:p-6 border-b border-washi-dark flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             <div>
-              <h2 className="text-lg font-bold text-kuro">Produtos</h2>
-              <p className="text-xs text-kuro/40 mt-0.5">Gerencie todos os produtos do catálogo</p>
+              <h2 className="text-base sm:text-lg font-bold text-kuro">Produtos</h2>
+              <p className="text-[10px] sm:text-xs text-kuro/40 mt-0.5">Gerencie todos os produtos do catálogo</p>
             </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <div className="relative flex-1 sm:flex-none">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-kuro/30" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-kuro/30" />
                 <input
                   type="text"
                   placeholder="Buscar..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full sm:w-56 pl-9 pr-4 py-2.5 bg-washi border border-washi-dark rounded-lg text-xs focus:outline-none focus:border-aka/30 transition-all placeholder:text-kuro/25"
+                  className="w-full sm:w-56 pl-8 sm:pl-9 pr-3 sm:pr-4 py-2 sm:py-2.5 bg-washi border border-washi-dark rounded-lg text-[10px] sm:text-xs focus:outline-none focus:border-aka/30 transition-all placeholder:text-kuro/25"
                 />
               </div>
               <button
                 onClick={() => setShowAddForm(true)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-aka hover:bg-aka-light text-shiro rounded-lg text-xs font-medium transition-colors shadow-md shadow-aka/20 shrink-0"
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-aka hover:bg-aka-light text-shiro rounded-lg text-[10px] sm:text-xs font-medium transition-colors shadow-md shadow-aka/20 shrink-0"
               >
-                <Plus size={16} /> Novo Produto
+                <Plus size={14} /> <span className="hidden sm:inline">Novo Produto</span><span className="sm:hidden">Novo</span>
               </button>
             </div>
           </div>
