@@ -39,29 +39,19 @@ const values = [
 
 const timeline = [
   {
-    year: '2018',
-    title: 'O Início',
-    desc: 'Fundada por dois judocas brasileiros apaixonados pela arte marcial, a Yawara nasceu de viagens ao Japão e do desejo de trazer o autêntico para o Brasil.',
+    year: '2010',
+    title: 'O Nascimento',
+    desc: 'O mestre Toyo, com mais de 50 anos de experiência no judô, deixa sua marca Toyo nas mãos de seu filho e funda a Yawara Japan na província de Kanagawa, no Japão — uma nova marca carregando toda a tradição e excelência de uma vida dedicada ao judô.',
   },
   {
-    year: '2020',
-    title: 'Primeira Importação',
-    desc: 'Realizamos nossa primeira grande importação direta de Tóquio, trazendo judogis e equipamentos de alta qualidade para atletas brasileiros.',
+    year: '2014',
+    title: 'Homologação FIJ',
+    desc: 'A marca conquista a homologação da FIJ (Federação Internacional de Judô), recebendo o selo oficial nos kimonos — um marco de qualidade e reconhecimento mundial.',
   },
   {
-    year: '2022',
-    title: 'Expansão Nacional',
-    desc: 'Expandimos para todo o território nacional, atendendo mais de 500 dojos e milhares de judocas em todos os estados.',
-  },
-  {
-    year: '2024',
-    title: 'Referência no Mercado',
-    desc: 'Nos tornamos referência em produtos premium de judô, sendo a escolha de atletas da seleção brasileira.',
-  },
-  {
-    year: '2026',
-    title: 'Nova Plataforma',
-    desc: 'Lançamos nossa nova plataforma online para oferecer uma experiência de compra à altura dos nossos produtos.',
+    year: '2025',
+    title: 'Chegada à América do Sul',
+    desc: 'Ynamoto Sensei fecha parceria para se tornar o responsável oficial da Yawara Japan na América do Sul, trazendo a marca para o Brasil e patrocinando diversos atletas olímpicos brasileiros.',
   },
 ]
 
@@ -111,8 +101,8 @@ export default function About() {
             transition={{ delay: 0.5 }}
             className="text-shiro/50 mt-6 max-w-2xl mx-auto leading-relaxed"
           >
-            Mais do que uma loja, somos uma ponte entre a tradição japonesa do judô e os
-            atletas brasileiros que buscam o melhor para sua prática.
+            Nascida no Japão em 2010, com mais de 15 anos de tradição e selo da FIJ.
+            Hoje presente na América do Sul, vestindo atletas olímpicos brasileiros.
           </motion.p>
         </div>
       </section>
@@ -140,7 +130,7 @@ export default function About() {
                   />
                 </div>
                 <div className="absolute -bottom-6 -right-6 bg-aka text-shiro p-6 rounded-2xl shadow-xl">
-                  <p className="font-jp text-3xl font-bold">8+</p>
+                  <p className="font-jp text-3xl font-bold">15+</p>
                   <p className="text-xs text-shiro/70 mt-1">Anos de tradição</p>
                 </div>
               </div>
@@ -161,19 +151,20 @@ export default function About() {
               </h2>
               <div className="space-y-4 text-kuro/60 text-sm leading-relaxed">
                 <p>
-                  A Yawara nasceu da crença de que cada judoca merece equipamentos que honrem
-                  a tradição e excelência desta arte marcial milenar. O nome "Yawara" (柔)
-                  vem do caractere japonês para "suavidade" — o princípio fundamental do judô.
+                  O mestre Toyo, com mais de 50 anos de experiência no judô, deixou sua marca
+                  Toyo nas mãos de seu filho e, em 2010, fundou a Yawara Japan na província de
+                  Kanagawa, no Japão. O nome "Yawara" (柔) vem do caractere japonês para
+                  "suavidade" — o princípio fundamental do judô.
                 </p>
                 <p>
-                  Trabalhamos diretamente com fabricantes japoneses renomados, selecionando
-                  apenas os melhores materiais e acabamentos. Cada judogi, faixa e acessório
-                  passa pelo nosso rigoroso controle de qualidade antes de chegar às suas mãos.
+                  Em 2014, a marca conquistou a homologação da FIJ (Federação Internacional de Judô),
+                  garantindo o selo oficial em seus kimonos — um reconhecimento mundial de qualidade
+                  que pouquíssimas marcas no mundo possuem.
                 </p>
                 <p>
-                  Do iniciante ao atleta olímpico, nossa missão é ser a referência brasileira
-                  em produtos autênticos de judô japonês, contribuindo para o crescimento
-                  e a excelência da arte suave no Brasil.
+                  Em 2025, Ynamoto Sensei firmou parceria para ser o responsável oficial da
+                  Yawara Japan na América do Sul. Hoje a marca patrocina diversos atletas
+                  olímpicos do Brasil, sendo referência em produtos autênticos de judô japonês.
                 </p>
               </div>
             </motion.div>

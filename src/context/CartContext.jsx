@@ -72,7 +72,8 @@ export function CartProvider({ children }) {
   )
 
   const sendToWhatsApp = () => {
-    const phoneNumber = '5511999999999'
+    const hour = new Date().getHours()
+    const phoneNumber = (hour >= 8 && hour < 18) ? '5511972224780' : '818036448596'
     let message = '🥋 *YAWARA — Pedido via Site*\n\n'
     message += '━━━━━━━━━━━━━━━━━━━━\n'
 

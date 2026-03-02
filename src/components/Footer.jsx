@@ -11,7 +11,7 @@ export default function Footer() {
             <h3 className="font-jp text-2xl text-shiro font-bold tracking-wider mb-2">
               YAWARA
             </h3>
-            <p className="text-kin text-xs font-jp tracking-[0.3em] mb-4">柔 — 道</p>
+            <p className="text-kin text-xs font-jp tracking-[0.3em] mb-4">柔JAPAN</p>
             <p className="text-sm leading-relaxed text-shiro/40">
               Produtos autênticos de judô importados diretamente do Japão.
               Qualidade, tradição e excelência em cada peça.

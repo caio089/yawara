@@ -104,12 +104,12 @@ export default function Home() {
               loop
               muted
               playsInline
-              className="w-full h-full object-cover opacity-40"
+              className="w-full h-full object-cover opacity-55"
               src="/videos/video yawara.mp4"
             />
           </motion.div>
-          <div className="absolute inset-0 bg-gradient-to-b from-kuro/50 via-kuro/70 to-kuro" />
-          <div className="absolute inset-0 bg-gradient-to-r from-kuro/40 via-transparent to-kuro/40" />
+          <div className="absolute inset-0 bg-gradient-to-b from-kuro/40 via-kuro/50 to-kuro" />
+          <div className="absolute inset-0 bg-gradient-to-r from-kuro/30 via-transparent to-kuro/30" />
           <div className="absolute inset-0 seigaiha-pattern opacity-15" />
         </div>
 

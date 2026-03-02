@@ -4,7 +4,7 @@ import { Trophy, Medal, Users, ExternalLink, Star, Camera } from 'lucide-react'
 const ambassador = {
   name: 'Rafaela Silva',
   role: 'Embaixadora',
-  description: 'Campeã Olímpica e embaixadora oficial da Yawara Japan. Rafaela representa a força, a garra e a excelência do judô brasileiro no mundo.',
+  description: 'Campeã Olímpica e Bicampeã Mundial, Rafaela Silva é a embaixadora oficial da Yawara Japan. Ela representa a força, a garra e a excelência do judô brasileiro no mundo.',
   image: '/images/rafaela-silva.png',
 }
 
@@ -30,6 +30,11 @@ const sponsored = [
     image: '/images/marcelo-vicinittji.png',
   },
   {
+    name: 'Sarah Mendes',
+    role: 'Patrocinada',
+    image: '/images/sarah-mendes.png',
+  },
+  {
     name: 'Stanley Torres',
     role: 'Patrocinado',
     image: '/images/stanley-torres.png',
@@ -51,6 +56,11 @@ const partners = [
     name: 'Thiago dos Remédios',
     role: 'Parceiro',
     image: '/images/thiago-remedios.png',
+  },
+  {
+    name: 'Moacir Mendes',
+    role: 'Parceiro',
+    image: '/images/moacir-mendes.png',
   },
 ]
 
@@ -204,7 +214,7 @@ export default function Partners() {
                   <p className="text-shiro/50 text-sm leading-relaxed">{ambassador.description}</p>
                   <div className="flex items-center gap-2 mt-6">
                     <Star size={14} className="text-kin" />
-                    <span className="text-xs text-kin font-medium uppercase tracking-wider">Campeã Olímpica</span>
+                    <span className="text-xs text-kin font-medium uppercase tracking-wider">Campeã Olímpica · Bicampeã Mundial</span>
                   </div>
                 </div>
               </div>
