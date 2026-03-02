@@ -43,6 +43,11 @@ const sponsored = [
 
 const partners = [
   {
+    name: 'Thiago Camilo',
+    role: 'Amigo da Marca',
+    image: '/images/thiago-camilo.png',
+  },
+  {
     name: 'Chrystian Silva',
     role: 'Parceiro',
     image: '/images/chrystian-silva.png',
@@ -66,7 +71,7 @@ const partners = [
 
 const stats = [
   { icon: Trophy, value: '5', label: 'Patrocinados' },
-  { icon: Users, value: '3', label: 'Parceiros' },
+  { icon: Users, value: '5', label: 'Parceiros' },
   { icon: Star, value: '1', label: 'Embaixadora' },
 ]
 
@@ -272,6 +277,9 @@ export default function Partners() {
                 </div>
 
                 <div className="p-4 text-center">
+                  {person.role === 'Amigo da Marca' && (
+                    <span className="inline-block text-[10px] font-semibold text-kin uppercase tracking-wider mb-1">Amigo da Marca</span>
+                  )}
                   <h3 className="text-sm font-bold text-shiro leading-tight">{person.name}</h3>
                 </div>
               </motion.div>

@@ -23,8 +23,8 @@ export default function Catalog() {
       result = result.filter(
         (p) =>
           p.name.toLowerCase().includes(query) ||
-          p.description.toLowerCase().includes(query) ||
-          p.nameJp.includes(query)
+          (p.description && p.description.toLowerCase().includes(query)) ||
+          (p.nameJp && p.nameJp.includes(query))
       )
     }
 
@@ -41,7 +41,7 @@ export default function Catalog() {
     }
 
     return result
-  }, [activeCategory, searchQuery, sortBy])
+  }, [products, activeCategory, searchQuery, sortBy])
 
   return (
     <div className="min-h-screen">

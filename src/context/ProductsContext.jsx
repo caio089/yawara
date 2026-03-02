@@ -1,39 +1,54 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useLayoutEffect, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
-import { products as fallbackProducts, categories } from '../data/products'
+import { categories } from '../data/products'
 
 const ProductsContext = createContext()
+const configured = isSupabaseConfigured()
+
+function normalizeProduct(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    nameJp: row.name_jp ?? row.nameJp,
+    description: row.description,
+    price: row.price,
+    category: row.category,
+    image: row.image,
+    badge: row.badge ?? null,
+    available: row.available ?? true,
+    sizes: row.sizes ?? undefined,
+    colors: row.colors ?? undefined,
+    embroidery: row.embroidery ?? undefined,
+  }
+}
 
 export function ProductsProvider({ children }) {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
-  const configured = isSupabaseConfigured()
 
   const fetchProducts = useCallback(async () => {
-    setLoading(true)
     if (!configured) {
-      setProducts(fallbackProducts.map((p) => ({ ...p, available: true })))
+      setProducts([])
       setLoading(false)
       return
     }
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false })
-    if (!error && data) {
-      setProducts(
-        data.map((p) => ({
-          ...p,
-          sizes: p.sizes || undefined,
-          colors: p.colors || undefined,
-          embroidery: p.embroidery || undefined,
-        }))
-      )
+    setLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (!error && data) {
+        setProducts(data.map(normalizeProduct))
+      } else {
+        setProducts([])
+      }
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
-  }, [configured])
+  }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     fetchProducts()
   }, [fetchProducts])
 
@@ -142,6 +157,7 @@ export function ProductsProvider({ children }) {
         categories,
         averageTicket,
         loading,
+        fetchProducts,
         addProduct,
         updateProduct,
         deleteProduct,

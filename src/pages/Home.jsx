@@ -40,7 +40,7 @@ const PREVIEW_LIMIT = 8
 export default function Home() {
   const navigate = useNavigate()
   const heroRef = useRef(null)
-  const { activeProducts: products, categories } = useProducts()
+  const { activeProducts: products, categories, loading: productsLoading } = useProducts()
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('todos')
   const [sortBy, setSortBy] = useState('default')
@@ -57,8 +57,8 @@ export default function Home() {
       result = result.filter(
         (p) =>
           p.name.toLowerCase().includes(query) ||
-          p.description.toLowerCase().includes(query) ||
-          p.nameJp.includes(query)
+          (p.description && p.description.toLowerCase().includes(query)) ||
+          (p.nameJp && p.nameJp.includes(query))
       )
     }
 
@@ -75,7 +75,7 @@ export default function Home() {
     }
 
     return result
-  }, [activeCategory, searchQuery, sortBy])
+  }, [products, activeCategory, searchQuery, sortBy])
 
   const preview = filtered.slice(0, PREVIEW_LIMIT)
   const hasMore = filtered.length > PREVIEW_LIMIT
@@ -104,13 +104,13 @@ export default function Home() {
               loop
               muted
               playsInline
-              className="w-full h-full object-cover opacity-55"
+              className="w-full h-full object-cover opacity-80"
               src="/videos/video yawara.mp4"
             />
           </motion.div>
-          <div className="absolute inset-0 bg-gradient-to-b from-kuro/40 via-kuro/50 to-kuro" />
-          <div className="absolute inset-0 bg-gradient-to-r from-kuro/30 via-transparent to-kuro/30" />
-          <div className="absolute inset-0 seigaiha-pattern opacity-15" />
+          <div className="absolute inset-0 bg-gradient-to-b from-kuro/25 via-kuro/35 to-kuro" />
+          <div className="absolute inset-0 bg-gradient-to-r from-kuro/20 via-transparent to-kuro/20" />
+          <div className="absolute inset-0 seigaiha-pattern opacity-10" />
         </div>
 
         <motion.div
@@ -328,10 +328,28 @@ export default function Home() {
           </motion.div>
 
           <p className="text-xs text-kuro/40 mb-6">
-            {filtered.length} {filtered.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
+            {productsLoading ? 'Carregando...' : `${filtered.length} ${filtered.length === 1 ? 'produto encontrado' : 'produtos encontrados'}`}
           </p>
 
-          {preview.length > 0 ? (
+          {productsLoading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="bg-shiro rounded-2xl overflow-hidden border border-washi-dark"
+                >
+                  <div className="aspect-square bg-washi-dark/30 animate-pulse" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-4 bg-washi-dark/30 rounded animate-pulse w-3/4" />
+                    <div className="h-3 bg-washi-dark/20 rounded animate-pulse w-1/2" />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          ) : preview.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {preview.map((product, index) => (
                 <ProductCard key={product.id} product={product} index={index} />
@@ -389,6 +407,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
             <div className="flex -space-x-4 shrink-0">
               {[
+                '/images/thiago-camilo.png',
                 '/images/rafaela-silva.png',
                 '/images/chrystian-silva.png',
                 '/images/joao-derly.png',

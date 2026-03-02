@@ -38,9 +38,23 @@ export default function Footer() {
               Contato
             </h4>
             <ul className="space-y-3 text-sm">
-              <li>contato@yawara.com.br</li>
-              <li>(11) 99999-9999</li>
-              <li>São Paulo, SP — Brasil</li>
+              <li>
+                <a href="https://instagram.com/yawara_japan_brazil" target="_blank" rel="noopener noreferrer" className="hover:text-kin transition-colors">
+                  Instagram @yawara_japan_brazil
+                </a>
+              </li>
+              <li>
+                <a href="https://wa.me/5511972224780" target="_blank" rel="noopener noreferrer" className="hover:text-kin transition-colors">
+                  (11) 97222-4780
+                </a>
+                <span className="block text-shiro/50 text-xs mt-0.5">Atendimento: 8h às 18h (Brasília)</span>
+              </li>
+              <li>
+                <a href="https://wa.me/818036448596" target="_blank" rel="noopener noreferrer" className="hover:text-kin transition-colors">
+                  +81 80 3644-8596
+                </a>
+                <span className="block text-shiro/50 text-xs mt-0.5">Atendimento: 18h às 8h (Brasília) / Japão</span>
+              </li>
             </ul>
           </div>
         </div>
