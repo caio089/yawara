@@ -5,7 +5,19 @@ import { categories } from '../data/products'
 const ProductsContext = createContext()
 const configured = isSupabaseConfigured()
 
+function parseImage(value) {
+  if (!value) return { image: '', images: [] }
+  if (typeof value === 'string' && value.startsWith('[')) {
+    try {
+      const arr = JSON.parse(value)
+      if (Array.isArray(arr) && arr.length) return { image: arr[0], images: arr }
+    } catch (_) {}
+  }
+  return { image: value, images: [value] }
+}
+
 function normalizeProduct(row) {
+  const { image, images } = parseImage(row.image)
   return {
     id: row.id,
     name: row.name,
@@ -13,8 +25,8 @@ function normalizeProduct(row) {
     description: row.description,
     price: row.price,
     category: row.category,
-    image: row.image,
-    badge: row.badge ?? null,
+    image,
+    images,
     available: row.available ?? true,
     sizes: row.sizes ?? undefined,
     colors: row.colors ?? undefined,
@@ -66,17 +78,34 @@ export function ProductsProvider({ children }) {
     return data.publicUrl
   }
 
-  const addProduct = async (product, imageFile) => {
+  const getStoragePathsFromUrls = (urls) => {
+    if (!urls?.length) return []
+    return (Array.isArray(urls) ? urls : [urls])
+      .filter(Boolean)
+      .map((url) => {
+        const parts = String(url).split('/product-images/')
+        return parts[1]?.split('?')[0]?.trim()
+      })
+      .filter(Boolean)
+  }
+
+  const addProduct = async (product, imageFileOrFiles, _existingUrls) => {
     if (!configured) {
       const newId = Math.max(...products.map((p) => p.id), 0) + 1
       setProducts((prev) => [...prev, { ...product, id: newId, available: true }])
       return
     }
     let imageUrl = product.image
-    if (imageFile) {
-      imageUrl = await uploadImage(imageFile)
+    if (imageFileOrFiles?.length) {
+      const files = Array.isArray(imageFileOrFiles) ? imageFileOrFiles : [imageFileOrFiles]
+      const urls = []
+      for (const file of files) {
+        const url = await uploadImage(file)
+        if (url) urls.push(url)
+      }
+      imageUrl = urls.length > 1 ? JSON.stringify(urls) : urls[0] || imageUrl
     }
-    const { name, nameJp, description, price, category, badge, sizes, colors, embroidery } = product
+    const { name, nameJp, description, price, category, sizes, colors, embroidery, available } = product
     const row = {
       name,
       name_jp: nameJp,
@@ -84,24 +113,20 @@ export function ProductsProvider({ children }) {
       price,
       category,
       image: imageUrl,
-      badge: badge || null,
+      badge: null,
       sizes: sizes?.length ? sizes : null,
       colors: colors?.length ? colors : null,
       embroidery: embroidery?.length ? embroidery : null,
-      available: true,
+      available: available !== false,
     }
     const { error } = await supabase.from('products').insert(row)
     if (!error) await fetchProducts()
   }
 
-  const updateProduct = async (id, updates, imageFile) => {
+  const updateProduct = async (id, updates, imageFileOrFiles, existingUrls = []) => {
     if (!configured) {
       setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)))
       return
-    }
-    let imageUrl = updates.image
-    if (imageFile) {
-      imageUrl = await uploadImage(imageFile)
     }
     const row = {
       name: updates.name,
@@ -109,20 +134,40 @@ export function ProductsProvider({ children }) {
       description: updates.description,
       price: updates.price,
       category: updates.category,
-      image: imageUrl,
-      badge: updates.badge || null,
+      badge: null,
       sizes: updates.sizes?.length ? updates.sizes : null,
       colors: updates.colors?.length ? updates.colors : null,
       embroidery: updates.embroidery?.length ? updates.embroidery : null,
+    }
+    if (typeof updates.available === 'boolean') {
+      row.available = updates.available
+    }
+    if (imageFileOrFiles?.length) {
+      const files = Array.isArray(imageFileOrFiles) ? imageFileOrFiles : [imageFileOrFiles]
+      const urls = []
+      for (const file of files) {
+        const url = await uploadImage(file)
+        if (url) urls.push(url)
+      }
+      const allUrls = [...(Array.isArray(existingUrls) ? existingUrls : []), ...urls]
+      row.image = allUrls.length > 1 ? JSON.stringify(allUrls) : allUrls[0] || updates.image
+    } else if (updates.image !== undefined) {
+      row.image = updates.image
     }
     const { error } = await supabase.from('products').update(row).eq('id', id)
     if (!error) await fetchProducts()
   }
 
   const deleteProduct = async (id) => {
+    const product = products.find((p) => p.id === id)
     if (!configured) {
       setProducts((prev) => prev.filter((p) => p.id !== id))
       return
+    }
+    const urls = product?.images?.length ? product.images : (product?.image ? [product.image] : [])
+    if (urls.length) {
+      const paths = getStoragePathsFromUrls(urls)
+      if (paths.length) await supabase.storage.from('product-images').remove(paths)
     }
     const { error } = await supabase.from('products').delete().eq('id', id)
     if (!error) await fetchProducts()
@@ -144,10 +189,7 @@ export function ProductsProvider({ children }) {
     if (!error) await fetchProducts()
   }
 
-  const averageTicket =
-    activeProducts.length > 0
-      ? activeProducts.reduce((sum, p) => sum + p.price, 0) / activeProducts.length
-      : 0
+  const totalValueProducts = products.reduce((sum, p) => sum + (Number(p.price) || 0), 0)
 
   return (
     <ProductsContext.Provider
@@ -155,7 +197,7 @@ export function ProductsProvider({ children }) {
         products,
         activeProducts,
         categories,
-        averageTicket,
+        totalValueProducts,
         loading,
         fetchProducts,
         addProduct,

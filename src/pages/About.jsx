@@ -59,16 +59,7 @@ export default function About() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative bg-kuro pt-28 pb-24 overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1564415315949-7a0c4c73aab4?w=1920&h=600&fit=crop"
-            alt="Dojo"
-            className="w-full h-full object-cover opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-kuro/60 to-kuro" />
-          <div className="absolute inset-0 seigaiha-pattern opacity-15" />
-        </div>
+      <section className="relative bg-sumi pt-28 pb-24 overflow-hidden">
 
         <div className="relative max-w-4xl mx-auto px-6 text-center">
           <motion.img

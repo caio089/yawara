@@ -22,10 +22,12 @@ export default function ProductDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { addItem } = useCart()
-  const { activeProducts: products } = useProducts()
+  const { products } = useProducts()
   const [added, setAdded] = useState(false)
 
   const product = products.find((p) => p.id === Number(id))
+  const images = product?.images?.length ? product.images : (product?.image ? [product.image] : [])
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || '')
   const [selectedColor, setSelectedColor] = useState(product?.colors?.[0] || '')
   const [selectedEmbroidery, setSelectedEmbroidery] = useState(product?.embroidery?.[0] || '')
@@ -50,6 +52,7 @@ export default function ProductDetail() {
   }
 
   const handleAdd = () => {
+    if (!product.available) return
     addItem(product, selectedSize)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
@@ -66,6 +69,11 @@ export default function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-shiro">
+      {!product.available && (
+        <div className="bg-orange-500/90 text-shiro text-center py-2.5 px-4 text-sm font-medium">
+          Este produto está temporariamente indisponível.
+        </div>
+      )}
       <section className="relative bg-kuro pt-20 pb-3 overflow-hidden">
         <div className="absolute inset-0 seigaiha-pattern opacity-15" />
         <div className="relative max-w-6xl mx-auto px-6">
@@ -83,23 +91,52 @@ export default function ProductDetail() {
 
       <section className="max-w-6xl mx-auto px-6 -mt-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="relative rounded-2xl overflow-hidden shadow-xl bg-washi-dark aspect-square"
-          >
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
-            {product.badge && (
-              <span className="absolute top-5 right-5 bg-aka text-shiro text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-full">
-                {product.badge}
-              </span>
+          <div>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="relative rounded-2xl overflow-hidden shadow-xl bg-washi-dark aspect-square"
+            >
+              <img
+                src={images[selectedImageIndex] || product.image}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+              {images.length > 1 && (
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 bg-kuro/70 backdrop-blur-sm rounded-full px-2 py-1.5">
+                  {images.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setSelectedImageIndex(i) }}
+                      className={`w-2 h-2 rounded-full transition-all ${i === selectedImageIndex ? 'bg-shiro scale-125' : 'bg-shiro/50 hover:bg-shiro/80'}`}
+                      aria-label={`Foto ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+              {product.badge && (
+                <span className="absolute top-5 right-5 bg-aka text-shiro text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-full">
+                  {product.badge}
+                </span>
+              )}
+            </motion.div>
+            {images.length > 1 && (
+              <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+                {images.map((src, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setSelectedImageIndex(i)}
+                    className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${i === selectedImageIndex ? 'border-kuro shadow-md' : 'border-washi-dark hover:border-kuro/50'}`}
+                  >
+                    <img src={src} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
             )}
-          </motion.div>
+          </div>
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -203,28 +240,37 @@ export default function ProductDetail() {
               </p>
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={handleAdd}
-              className={`flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg ${
-                added
-                  ? 'bg-green-600 text-shiro shadow-green-600/20'
-                  : 'bg-aka text-shiro hover:bg-aka-light shadow-aka/20'
-              }`}
-            >
-              {added ? (
-                <>
-                  <Check size={18} />
-                  Adicionado ao carrinho!
-                </>
-              ) : (
-                <>
-                  <ShoppingCart size={18} />
-                  Adicionar ao carrinho
-                </>
-              )}
-            </motion.button>
+            {product.available ? (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handleAdd}
+                className={`flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg ${
+                  added
+                    ? 'bg-green-600 text-shiro shadow-green-600/20'
+                    : 'bg-aka text-shiro hover:bg-aka-light shadow-aka/20'
+                }`}
+              >
+                {added ? (
+                  <>
+                    <Check size={18} />
+                    Adicionado ao carrinho!
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart size={18} />
+                    Adicionar ao carrinho
+                  </>
+                )}
+              </motion.button>
+            ) : (
+              <button
+                disabled
+                className="flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 rounded-xl text-sm font-medium bg-washi text-kuro/50 cursor-not-allowed border border-washi-dark"
+              >
+                Indisponível
+              </button>
+            )}
           </motion.div>
         </div>
       </section>

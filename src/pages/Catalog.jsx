@@ -5,7 +5,7 @@ import { useProducts } from '../context/ProductsContext'
 import ProductCard from '../components/ProductCard'
 
 export default function Catalog() {
-  const { activeProducts: products, categories } = useProducts()
+  const { products, categories } = useProducts()
   const [activeCategory, setActiveCategory] = useState('todos')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('default')

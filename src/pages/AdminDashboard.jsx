@@ -23,11 +23,16 @@ const categoryOptions = [
 const JUDOGI_SIZES = ['1,50', '1,55', '1,60', '1,65', '1,70', '1,75', '1,80', 'Enviar medidas via WhatsApp']
 const JUDOGI_COLORS = ['Azul', 'Branco']
 const JUDOGI_EMBROIDERY = ['Bordado na Lapela e na Calça', 'Bordado no Peito', 'Sem Bordado']
+const FAIXA_EMBROIDERY = ['Com bordado', 'Sem bordado']
 
 function ProductForm({ initial, onSave, onCancel, title }) {
   const fileInputRef = useRef(null)
-  const [imageFile, setImageFile] = useState(null)
-  const [imagePreview, setImagePreview] = useState(initial?.image || '')
+  const [imageFiles, setImageFiles] = useState([])
+  const [imagePreviews, setImagePreviews] = useState(() => {
+    if (initial?.images?.length) return [...initial.images]
+    if (initial?.image) return [initial.image]
+    return []
+  })
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState(() => ({
     name: initial?.name || '',
@@ -35,7 +40,7 @@ function ProductForm({ initial, onSave, onCancel, title }) {
     description: initial?.description || '',
     price: initial?.price?.toString() || '',
     category: initial?.category || 'judogi',
-    badge: initial?.badge || '',
+    available: initial?.available !== false,
     sizes: Array.isArray(initial?.sizes) ? initial.sizes : [],
     colors: Array.isArray(initial?.colors) ? initial.colors : [],
     embroidery: Array.isArray(initial?.embroidery) ? initial.embroidery : [],
@@ -44,6 +49,7 @@ function ProductForm({ initial, onSave, onCancel, title }) {
   }))
 
   const isJudogi = form.category === 'judogi'
+  const isFaixa = form.category === 'faixas'
 
   const toggleArrayItem = (key, item) => {
     setForm((prev) => {
@@ -53,36 +59,57 @@ function ProductForm({ initial, onSave, onCancel, title }) {
   }
 
   const handleImageSelect = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setImageFile(file)
-    const reader = new FileReader()
-    reader.onloadend = () => setImagePreview(reader.result)
-    reader.readAsDataURL(file)
+    const files = e.target.files ? [...e.target.files] : []
+    if (!files.length) return
+    const newFiles = Array.from(files)
+    setImageFiles((prev) => [...prev, ...newFiles])
+    const readers = newFiles.map((file) => {
+      return new Promise((resolve) => {
+        const r = new FileReader()
+        r.onloadend = () => resolve(r.result)
+        r.readAsDataURL(file)
+      })
+    })
+    Promise.all(readers).then((results) => {
+      setImagePreviews((prev) => [...prev, ...results])
+    })
+    e.target.value = ''
+  }
+
+  const removeImage = (index) => {
+    const existingCount = imagePreviews.length - imageFiles.length
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index))
+    if (index >= existingCount) {
+      const fileIndex = index - existingCount
+      setImageFiles((prev) => prev.filter((_, i) => i !== fileIndex))
+    }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
-    const sizes = isJudogi
-      ? form.sizes
-      : form.sizesText ? form.sizesText.split(',').map((s) => s.trim()).filter(Boolean) : undefined
-    const colors = isJudogi
-      ? form.colors
-      : form.colorsText ? form.colorsText.split(',').map((s) => s.trim()).filter(Boolean) : undefined
+    const parseList = (text) => (text || '').split(',').map((s) => s.trim()).filter(Boolean)
+    const sizes = isJudogi ? form.sizes : parseList(form.sizesText)
+    const colors = isJudogi ? form.colors : parseList(form.colorsText)
+    const embroideryVal = isJudogi ? form.embroidery : (isFaixa ? form.embroidery : undefined)
+    const filesToSend = imageFiles.length > 0 ? imageFiles : null
+    const existingUrls = filesToSend ? imagePreviews.slice(0, imagePreviews.length - filesToSend.length) : []
+    const imageValue = !filesToSend && imagePreviews.length > 0
+      ? (imagePreviews.length === 1 ? imagePreviews[0] : JSON.stringify(imagePreviews))
+      : (initial?.image || '')
     const product = {
       name: form.name,
       nameJp: form.nameJp,
       description: form.description,
       price: parseFloat(form.price) || 0,
       category: form.category,
-      image: initial?.image || '',
-      badge: form.badge || undefined,
+      available: form.available,
+      image: imageValue,
       sizes: sizes?.length ? sizes : undefined,
       colors: colors?.length ? colors : undefined,
-      embroidery: isJudogi && form.embroidery.length ? form.embroidery : undefined,
+      embroidery: embroideryVal?.length ? embroideryVal : undefined,
     }
-    await onSave(product, imageFile)
+    await onSave(product, filesToSend, existingUrls)
     setSaving(false)
   }
 
@@ -91,24 +118,26 @@ function ProductForm({ initial, onSave, onCancel, title }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-kuro/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4"
+      className="fixed inset-0 bg-kuro/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4 overscroll-contain"
       onClick={onCancel}
+      style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-washi rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-washi rounded-t-2xl sm:rounded-2xl w-full max-w-2xl h-[92dvh] max-h-[92dvh] sm:h-auto sm:max-h-[90vh] flex flex-col shadow-2xl"
       >
-        <div className="sticky top-0 bg-washi border-b border-washi-dark px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-10">
-          <h3 className="text-base sm:text-lg font-bold text-kuro">{title}</h3>
-          <button onClick={onCancel} className="p-2 hover:bg-kuro/5 rounded-lg transition-colors">
-            <X size={18} className="text-kuro/50" />
+        <div className="shrink-0 bg-washi border-b border-washi-dark px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <h3 className="text-base sm:text-lg font-bold text-kuro truncate pr-2">{title}</h3>
+          <button type="button" onClick={onCancel} className="shrink-0 p-2.5 -m-2.5 hover:bg-kuro/5 rounded-lg transition-colors touch-manipulation" aria-label="Fechar">
+            <X size={20} className="text-kuro/50" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-4 pb-28 sm:pb-6">
           <Field label="Nome *" value={form.name} onChange={(v) => setForm({ ...form, name: v })} placeholder="Ex: Judogi Elite" required />
 
           <div>
@@ -118,49 +147,72 @@ function ProductForm({ initial, onSave, onCancel, title }) {
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={3}
               placeholder="Descrição detalhada do produto..."
-              className="w-full px-4 py-3 bg-shiro border border-washi-dark rounded-xl text-sm focus:outline-none focus:border-aka/30 focus:ring-2 focus:ring-aka/10 transition-all placeholder:text-kuro/25 resize-none"
+              className="w-full min-h-[80px] px-4 py-3 bg-shiro border border-washi-dark rounded-xl text-base sm:text-sm focus:outline-none focus:border-aka/30 focus:ring-2 focus:ring-aka/10 transition-all placeholder:text-kuro/25 resize-none touch-manipulation"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Preço (R$) *" value={form.price} onChange={(v) => setForm({ ...form, price: v })} type="number" placeholder="0.00" required />
             <div>
               <label className="text-xs font-medium text-kuro/50 uppercase tracking-wider block mb-1.5">Categoria</label>
               <select
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full px-4 py-3 bg-shiro border border-washi-dark rounded-xl text-sm focus:outline-none focus:border-aka/30 cursor-pointer"
+                className="w-full min-h-[48px] px-4 py-3 bg-shiro border border-washi-dark rounded-xl text-base sm:text-sm focus:outline-none focus:border-aka/30 cursor-pointer touch-manipulation"
               >
                 {categoryOptions.map((c) => (
                   <option key={c.value} value={c.value}>{c.label}</option>
                 ))}
               </select>
             </div>
-            <Field label="Badge" value={form.badge} onChange={(v) => setForm({ ...form, badge: v })} placeholder="Ex: Novo" />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <span className="text-xs font-medium text-kuro/50 uppercase tracking-wider w-full sm:w-auto">Status no site</span>
+            <button
+              type="button"
+              onClick={() => setForm((prev) => ({ ...prev, available: !prev.available }))}
+              className={`min-h-[44px] inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all touch-manipulation ${
+                form.available ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+              }`}
+            >
+              {form.available ? <Eye size={14} /> : <EyeOff size={14} />}
+              <span className="whitespace-nowrap">{form.available ? 'Ativo' : 'Inativo'}</span>
+            </button>
           </div>
 
           <div>
-            <label className="text-xs font-medium text-kuro/50 uppercase tracking-wider block mb-1.5">Imagem do produto *</label>
-            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
+            <label className="text-xs font-medium text-kuro/50 uppercase tracking-wider block mb-1.5">Imagens do produto *</label>
+            <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-washi-dark rounded-xl p-4 sm:p-6 text-center cursor-pointer hover:border-aka/30 hover:bg-aka/5 transition-all"
+              className="min-h-[120px] sm:min-h-0 border-2 border-dashed border-washi-dark rounded-xl p-4 sm:p-6 text-center cursor-pointer hover:border-aka/30 hover:bg-aka/5 transition-all touch-manipulation active:bg-aka/10"
             >
-              {imagePreview ? (
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <img src={imagePreview} alt="Preview" className="w-14 h-14 sm:w-20 sm:h-20 object-cover rounded-lg shrink-0" />
-                  <div className="text-left min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-kuro truncate">{imageFile?.name || 'Imagem atual'}</p>
-                    <p className="text-[10px] sm:text-xs text-kuro/40 mt-1">Toque para trocar</p>
+              {imagePreviews.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-3 justify-center">
+                    {imagePreviews.map((src, i) => (
+                      <div key={i} className="relative group">
+                        <img src={src} alt={`Preview ${i + 1}`} className="w-14 h-14 sm:w-20 sm:h-20 object-cover rounded-lg shrink-0 border border-washi-dark" />
+                        <button type="button" onClick={(e) => { e.stopPropagation(); removeImage(i) }} className="absolute -top-0.5 -right-0.5 w-7 h-7 sm:w-6 sm:h-6 bg-kuro text-shiro rounded-full flex items-center justify-center opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow touch-manipulation" aria-label="Remover imagem">
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                    <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-kuro/20 flex flex-col items-center justify-center shrink-0 text-kuro/40 hover:border-aka/40 hover:text-aka/60 transition-colors">
+                      <Plus size={20} />
+                      <span className="text-[10px] mt-0.5">Adicionar</span>
+                    </div>
                   </div>
+                  <p className="text-[10px] text-kuro/40">Clique em uma foto para remover (X) ou no quadro “Adicionar” para mais fotos</p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-2 py-1 sm:py-2">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-washi rounded-xl flex items-center justify-center">
                     <Upload size={18} className="text-kuro/30" />
                   </div>
-                  <p className="text-xs sm:text-sm text-kuro/50">Toque para selecionar uma imagem</p>
-                  <p className="text-[10px] text-kuro/30">PNG, JPG ou WEBP</p>
+                  <p className="text-xs sm:text-sm text-kuro/50">Clique para selecionar uma ou mais imagens</p>
+                  <p className="text-[10px] text-kuro/30">Você pode escolher várias de uma vez ou ir adicionando aos poucos</p>
                 </div>
               )}
             </div>
@@ -173,7 +225,7 @@ function ProductForm({ initial, onSave, onCancel, title }) {
                 <div className="flex flex-wrap gap-2">
                   {JUDOGI_SIZES.map((size) => (
                     <button key={size} type="button" onClick={() => toggleArrayItem('sizes', size)}
-                      className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                      className={`min-h-[44px] px-3 py-2.5 rounded-lg text-xs font-medium transition-all touch-manipulation ${
                         form.sizes.includes(size) ? 'bg-kuro text-shiro shadow-md' : 'bg-shiro text-kuro/60 border border-washi-dark hover:bg-kuro/5'
                       }`}>{size}</button>
                   ))}
@@ -184,7 +236,7 @@ function ProductForm({ initial, onSave, onCancel, title }) {
                 <div className="flex flex-wrap gap-2">
                   {JUDOGI_COLORS.map((color) => (
                     <button key={color} type="button" onClick={() => toggleArrayItem('colors', color)}
-                      className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                      className={`min-h-[44px] px-3 py-2.5 rounded-lg text-xs font-medium transition-all touch-manipulation ${
                         form.colors.includes(color) ? 'bg-kuro text-shiro shadow-md' : 'bg-shiro text-kuro/60 border border-washi-dark hover:bg-kuro/5'
                       }`}>{color}</button>
                   ))}
@@ -195,7 +247,23 @@ function ProductForm({ initial, onSave, onCancel, title }) {
                 <div className="flex flex-wrap gap-2">
                   {JUDOGI_EMBROIDERY.map((opt) => (
                     <button key={opt} type="button" onClick={() => toggleArrayItem('embroidery', opt)}
-                      className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                      className={`min-h-[44px] px-3 py-2.5 rounded-lg text-xs font-medium transition-all touch-manipulation ${
+                        form.embroidery.includes(opt) ? 'bg-aka text-shiro shadow-md' : 'bg-shiro text-kuro/60 border border-washi-dark hover:bg-kuro/5'
+                      }`}>{opt}</button>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : isFaixa ? (
+            <>
+              <Field label="Tamanhos (digite separados por vírgula)" value={form.sizesText} onChange={(v) => setForm({ ...form, sizesText: v })} placeholder="Ex: 3, 4, 5, 6" />
+              <Field label="Cor da faixa" value={form.colorsText} onChange={(v) => setForm({ ...form, colorsText: v })} placeholder="Ex: Preta, Azul marinho" />
+              <div>
+                <label className="text-xs font-medium text-kuro/50 uppercase tracking-wider block mb-2">Bordado</label>
+                <div className="flex flex-wrap gap-2">
+                  {FAIXA_EMBROIDERY.map((opt) => (
+                    <button key={opt} type="button" onClick={() => toggleArrayItem('embroidery', opt)}
+                      className={`min-h-[44px] px-3 py-2.5 rounded-lg text-xs font-medium transition-all touch-manipulation ${
                         form.embroidery.includes(opt) ? 'bg-aka text-shiro shadow-md' : 'bg-shiro text-kuro/60 border border-washi-dark hover:bg-kuro/5'
                       }`}>{opt}</button>
                   ))}
@@ -208,17 +276,18 @@ function ProductForm({ initial, onSave, onCancel, title }) {
               <Field label="Cores (vírgula)" value={form.colorsText} onChange={(v) => setForm({ ...form, colorsText: v })} placeholder="Branca, Azul" />
             </div>
           )}
+          </div>
 
-          <div className="flex gap-3 pt-2 sticky bottom-0 bg-washi pb-2 -mx-4 sm:-mx-6 px-4 sm:px-6 border-t border-washi-dark pt-4">
-            <button type="button" onClick={onCancel} className="flex-1 px-4 sm:px-6 py-3 sm:py-3.5 border border-washi-dark rounded-xl text-xs sm:text-sm font-medium text-kuro/60 hover:bg-kuro/5 transition-colors">
+          <div className="shrink-0 flex gap-3 bg-washi border-t border-washi-dark p-4 sm:p-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-4">
+            <button type="button" onClick={onCancel} className="flex-1 min-h-[48px] px-4 sm:px-6 py-3 border border-washi-dark rounded-xl text-sm font-medium text-kuro/60 hover:bg-kuro/5 transition-colors touch-manipulation">
               Cancelar
             </button>
             <button
               type="submit"
-              disabled={saving || (!imagePreview && !imageFile)}
-              className="flex-1 px-4 sm:px-6 py-3 sm:py-3.5 bg-aka hover:bg-aka-light text-shiro rounded-xl text-xs sm:text-sm font-medium transition-colors shadow-lg shadow-aka/20 flex items-center justify-center gap-2 disabled:opacity-50"
+              disabled={saving || imagePreviews.length === 0}
+              className="flex-1 min-h-[48px] px-4 sm:px-6 py-3 bg-aka hover:bg-aka-light text-shiro rounded-xl text-sm font-medium transition-colors shadow-lg shadow-aka/20 flex items-center justify-center gap-2 disabled:opacity-50 touch-manipulation"
             >
-              <Save size={14} className="sm:w-4 sm:h-4" />
+              <Save size={18} className="sm:w-4 sm:h-4" />
               {saving ? 'Salvando...' : 'Salvar'}
             </button>
           </div>
@@ -239,7 +308,7 @@ function Field({ label, value, onChange, type = 'text', placeholder = '', requir
         placeholder={placeholder}
         required={required}
         step={type === 'number' ? '0.01' : undefined}
-        className="w-full px-4 py-3 bg-shiro border border-washi-dark rounded-xl text-sm focus:outline-none focus:border-aka/30 focus:ring-2 focus:ring-aka/10 transition-all placeholder:text-kuro/25"
+        className="w-full min-h-[48px] px-4 py-3 bg-shiro border border-washi-dark rounded-xl text-base sm:text-sm focus:outline-none focus:border-aka/30 focus:ring-2 focus:ring-aka/10 transition-all placeholder:text-kuro/25 touch-manipulation"
       />
     </div>
   )
@@ -249,7 +318,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate()
   const { logout } = useAdminAuth()
   const {
-    products, activeProducts, averageTicket, loading,
+    products, activeProducts, totalValueProducts, loading,
     addProduct, updateProduct, deleteProduct, toggleAvailability,
   } = useProducts()
 
@@ -267,7 +336,7 @@ export default function AdminDashboard() {
     { label: 'Total de Produtos', value: products.length, icon: Package, color: 'bg-blue-500/10 text-blue-600' },
     { label: 'Produtos Ativos', value: activeProducts.length, icon: PackageCheck, color: 'bg-green-500/10 text-green-600' },
     { label: 'Indisponíveis', value: products.length - activeProducts.length, icon: PackageX, color: 'bg-orange-500/10 text-orange-600' },
-    { label: 'Ticket Médio', value: `R$ ${averageTicket.toFixed(2)}`, icon: DollarSign, color: 'bg-purple-500/10 text-purple-600' },
+    { label: 'Valor total em produtos', value: `R$ ${totalValueProducts.toFixed(2)}`, icon: DollarSign, color: 'bg-purple-500/10 text-purple-600' },
   ]
 
   return (
@@ -294,16 +363,16 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-10">
           {stats.map((stat) => {
             const Icon = stat.icon
             return (
-              <div key={stat.label} className="bg-shiro rounded-xl p-5 border border-washi-dark">
-                <div className={`w-10 h-10 rounded-lg ${stat.color} flex items-center justify-center mb-3`}>
-                  <Icon size={20} />
+              <div key={stat.label} className="bg-shiro rounded-xl p-3 sm:p-5 border border-washi-dark min-w-0">
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg ${stat.color} flex items-center justify-center mb-2 sm:mb-3`}>
+                  <Icon size={18} className="sm:w-5 sm:h-5" />
                 </div>
-                <p className="text-2xl font-bold text-kuro">{stat.value}</p>
-                <p className="text-[11px] text-kuro/40 mt-0.5">{stat.label}</p>
+                <p className="text-lg sm:text-2xl font-bold text-kuro truncate">{stat.value}</p>
+                <p className="text-[10px] sm:text-[11px] text-kuro/40 mt-0.5 line-clamp-2">{stat.label}</p>
               </div>
             )
           })}
@@ -338,59 +407,59 @@ export default function AdminDashboard() {
           {loading ? (
             <div className="text-center py-16 text-kuro/30 text-sm">Carregando produtos...</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div className="overflow-x-auto -mx-3 sm:mx-0">
+              <table className="w-full min-w-[480px]">
                 <thead>
                   <tr className="bg-washi/50">
-                    <th className="text-left px-6 py-3 text-[10px] font-semibold text-kuro/40 uppercase tracking-wider">Produto</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-kuro/40 uppercase tracking-wider hidden sm:table-cell">Categoria</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold text-kuro/40 uppercase tracking-wider">Preço</th>
-                    <th className="text-center px-4 py-3 text-[10px] font-semibold text-kuro/40 uppercase tracking-wider">Status</th>
-                    <th className="text-right px-6 py-3 text-[10px] font-semibold text-kuro/40 uppercase tracking-wider">Ações</th>
+                    <th className="text-left px-3 sm:px-6 py-2.5 sm:py-3 text-[10px] font-semibold text-kuro/40 uppercase tracking-wider">Produto</th>
+                    <th className="text-left px-2 sm:px-4 py-2.5 sm:py-3 text-[10px] font-semibold text-kuro/40 uppercase tracking-wider hidden sm:table-cell">Categoria</th>
+                    <th className="text-left px-2 sm:px-4 py-2.5 sm:py-3 text-[10px] font-semibold text-kuro/40 uppercase tracking-wider">Preço</th>
+                    <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 text-[10px] font-semibold text-kuro/40 uppercase tracking-wider">Status</th>
+                    <th className="text-right px-3 sm:px-6 py-2.5 sm:py-3 text-[10px] font-semibold text-kuro/40 uppercase tracking-wider">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-washi-dark">
                   {filtered.map((product) => (
                     <tr key={product.id} className={`hover:bg-washi/30 transition-colors ${!product.available ? 'opacity-50' : ''}`}>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                           {product.image ? (
-                            <img src={product.image} alt={product.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                            <img src={product.image} alt={product.name} className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover shrink-0" />
                           ) : (
-                            <div className="w-10 h-10 rounded-lg bg-washi flex items-center justify-center shrink-0">
-                              <Image size={16} className="text-kuro/20" />
+                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-washi flex items-center justify-center shrink-0">
+                              <Image size={14} className="text-kuro/20 sm:w-4 sm:h-4" />
                             </div>
                           )}
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-kuro truncate">{product.name}</p>
-                            <p className="text-[10px] text-kuro/30 font-jp">{product.nameJp || product.name_jp}</p>
+                            <p className="text-xs sm:text-sm font-medium text-kuro truncate">{product.name}</p>
+                            <p className="text-[10px] text-kuro/30 font-jp truncate hidden sm:block">{product.nameJp || product.name_jp}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4 hidden sm:table-cell">
-                        <span className="px-2.5 py-1 bg-washi rounded-md text-[10px] font-medium text-kuro/60 capitalize">{product.category}</span>
+                      <td className="px-2 sm:px-4 py-3 sm:py-4 hidden sm:table-cell">
+                        <span className="px-2 py-0.5 bg-washi rounded-md text-[10px] font-medium text-kuro/60 capitalize">{product.category}</span>
                       </td>
-                      <td className="px-4 py-4">
-                        <span className="text-sm font-semibold text-kuro">R$ {product.price.toFixed(2)}</span>
+                      <td className="px-2 sm:px-4 py-3 sm:py-4 whitespace-nowrap">
+                        <span className="text-xs sm:text-sm font-semibold text-kuro">R$ {product.price.toFixed(2)}</span>
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-2 sm:px-4 py-3 sm:py-4 text-center">
                         <button
                           onClick={() => toggleAvailability(product.id)}
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-medium transition-all ${
+                          className={`min-h-[36px] inline-flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-full text-[10px] font-medium transition-all touch-manipulation ${
                             product.available ? 'bg-green-50 text-green-600 hover:bg-green-100' : 'bg-orange-50 text-orange-600 hover:bg-orange-100'
                           }`}
                         >
                           {product.available ? <Eye size={12} /> : <EyeOff size={12} />}
-                          {product.available ? 'Ativo' : 'Inativo'}
+                          <span className="hidden sm:inline">{product.available ? 'Ativo' : 'Inativo'}</span>
                         </button>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-1">
-                          <button onClick={() => setEditingProduct(product)} className="p-2 hover:bg-blue-50 text-kuro/40 hover:text-blue-600 rounded-lg transition-all" title="Editar">
-                            <Pencil size={15} />
+                      <td className="px-3 sm:px-6 py-3 sm:py-4">
+                        <div className="flex items-center justify-end gap-0.5 sm:gap-1">
+                          <button onClick={() => setEditingProduct(product)} className="p-2.5 sm:p-2 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center hover:bg-blue-50 text-kuro/40 hover:text-blue-600 rounded-lg transition-all touch-manipulation" title="Editar" aria-label="Editar">
+                            <Pencil size={16} />
                           </button>
-                          <button onClick={() => setDeleteConfirm(product)} className="p-2 hover:bg-red-50 text-kuro/40 hover:text-red-500 rounded-lg transition-all" title="Excluir">
-                            <Trash2 size={15} />
+                          <button onClick={() => setDeleteConfirm(product)} className="p-2.5 sm:p-2 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center hover:bg-red-50 text-kuro/40 hover:text-red-500 rounded-lg transition-all touch-manipulation" title="Excluir" aria-label="Excluir">
+                            <Trash2 size={16} />
                           </button>
                         </div>
                       </td>
@@ -411,8 +480,8 @@ export default function AdminDashboard() {
           <ProductForm
             title="Adicionar Produto"
             onCancel={() => setShowAddForm(false)}
-            onSave={async (product, file) => {
-              await addProduct(product, file)
+            onSave={async (product, file, existingUrls) => {
+              await addProduct(product, file, existingUrls)
               setShowAddForm(false)
             }}
           />
@@ -422,8 +491,8 @@ export default function AdminDashboard() {
             title="Editar Produto"
             initial={editingProduct}
             onCancel={() => setEditingProduct(null)}
-            onSave={async (updates, file) => {
-              await updateProduct(editingProduct.id, updates, file)
+            onSave={async (updates, file, existingUrls) => {
+              await updateProduct(editingProduct.id, updates, file, existingUrls)
               setEditingProduct(null)
             }}
           />

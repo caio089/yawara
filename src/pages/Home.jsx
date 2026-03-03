@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { ChevronRight, Shield, Award, Truck, Search, X, Trophy } from 'lucide-react'
-import { useRef, useState, useMemo } from 'react'
+import { useRef, useState, useMemo, useEffect } from 'react'
 import { useProducts } from '../context/ProductsContext'
 import ProductCard from '../components/ProductCard'
 
@@ -40,7 +40,8 @@ const PREVIEW_LIMIT = 8
 export default function Home() {
   const navigate = useNavigate()
   const heroRef = useRef(null)
-  const { activeProducts: products, categories, loading: productsLoading } = useProducts()
+  const videoRef = useRef(null)
+  const { products, categories, loading: productsLoading } = useProducts()
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('todos')
   const [sortBy, setSortBy] = useState('default')
@@ -87,6 +88,29 @@ export default function Home() {
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 150])
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
 
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    const play = () => {
+      video.play().catch(() => {})
+    }
+    play()
+    const onPause = () => {
+      if (!video.ended) play()
+    }
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') play()
+    }
+    video.addEventListener('pause', onPause)
+    video.addEventListener('ended', play)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => {
+      video.removeEventListener('pause', onPause)
+      video.removeEventListener('ended', play)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, [])
+
   return (
     <div className="overflow-hidden">
       {/* === HERO === */}
@@ -100,11 +124,15 @@ export default function Home() {
             className="absolute inset-[-20%] overflow-hidden"
           >
             <video
+              ref={videoRef}
               autoPlay
               loop
               muted
               playsInline
-              className="w-full h-full object-cover opacity-80"
+              disablePictureInPicture
+              disableRemotePlayback
+              className="w-full h-full object-cover opacity-80 pointer-events-none"
+              style={{ objectFit: 'cover' }}
               src="/videos/video yawara.mp4"
             />
           </motion.div>

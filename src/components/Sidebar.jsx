@@ -98,7 +98,7 @@ export default function Sidebar() {
                   <h2 className="text-2xl font-bold text-shiro font-jp tracking-wider">
                     YAWARA
                   </h2>
-                  <p className="text-kin text-xs mt-1 font-jp tracking-widest">柔 — 道</p>
+                  <p className="text-kin text-xs mt-1 font-jp tracking-widest">柔JAPAN</p>
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
@@ -177,6 +177,17 @@ export default function Sidebar() {
                   </p>
                   <p className="text-shiro/20 text-[9px] mt-2 tracking-wider">
                     Máximo de eficiência — Prosperidade mútua
+                  </p>
+                  <p className="text-shiro/15 text-[9px] mt-4 tracking-wide">
+                    Site desenvolvido por Caio Campos{' '}
+                    <a
+                      href="https://instagram.com/caio_campos66"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-shiro/30 hover:text-kin transition-colors"
+                    >
+                      @Caio_campos66
+                    </a>
                   </p>
                 </div>
               </motion.div>

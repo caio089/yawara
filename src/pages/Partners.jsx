@@ -10,14 +10,20 @@ const ambassador = {
 
 const sponsored = [
   {
-    name: 'Guilherme Oliveira',
-    role: 'Patrocinado',
-    image: '/images/guilherme-oliveira.png',
+    name: 'Sarah Mendes',
+    role: 'Patrocinada',
+    image: '/images/sarah-mendes.png',
+    imagePosition: 'center',
   },
   {
     name: 'Rafael Macedo',
     role: 'Patrocinado',
     image: '/images/rafael-macedo.png',
+  },
+  {
+    name: 'Guilherme Oliveira',
+    role: 'Patrocinado',
+    image: '/images/guilherme-oliveira.png',
   },
   {
     name: 'Alana Maldonado',
@@ -30,11 +36,6 @@ const sponsored = [
     image: '/images/marcelo-vicinittji.png',
   },
   {
-    name: 'Sarah Mendes',
-    role: 'Patrocinada',
-    image: '/images/sarah-mendes.png',
-  },
-  {
     name: 'Stanley Torres',
     role: 'Patrocinado',
     image: '/images/stanley-torres.png',
@@ -43,14 +44,14 @@ const sponsored = [
 
 const partners = [
   {
+    name: 'Moacir Mendes',
+    role: 'Parceiro',
+    image: '/images/moacir-mendes.png',
+  },
+  {
     name: 'Thiago Camilo',
     role: 'Amigo da Marca',
     image: '/images/thiago-camilo.png',
-  },
-  {
-    name: 'Chrystian Silva',
-    role: 'Parceiro',
-    image: '/images/chrystian-silva.png',
   },
   {
     name: 'João Derly',
@@ -58,14 +59,14 @@ const partners = [
     image: '/images/joao-derly.png',
   },
   {
+    name: 'Chrystian Silva',
+    role: 'Parceiro',
+    image: '/images/chrystian-silva.png',
+  },
+  {
     name: 'Thiago dos Remédios',
     role: 'Parceiro',
     image: '/images/thiago-remedios.png',
-  },
-  {
-    name: 'Moacir Mendes',
-    role: 'Parceiro',
-    image: '/images/moacir-mendes.png',
   },
 ]
 
@@ -77,6 +78,7 @@ const stats = [
 
 function PersonCard({ person, index, accentColor = 'aka' }) {
   const hasImage = Boolean(person.image)
+  const positionClass = person.imagePosition === 'center' ? 'object-center' : 'object-top'
   const roleColors = {
     Patrocinado: 'bg-aka text-shiro',
     Patrocinada: 'bg-aka text-shiro',
@@ -97,7 +99,7 @@ function PersonCard({ person, index, accentColor = 'aka' }) {
           <img
             src={person.image}
             alt={person.name}
-            className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+            className={`w-full h-full object-cover ${positionClass} group-hover:scale-105 transition-transform duration-700`}
             loading="lazy"
           />
         ) : (

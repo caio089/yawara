@@ -12,6 +12,7 @@ export default function ProductCard({ product, index }) {
 
   const handleAdd = (e) => {
     e.stopPropagation()
+    if (!product.available) return
     addItem(product, selectedSize)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
@@ -26,17 +27,31 @@ export default function ProductCard({ product, index }) {
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.5, delay: index * 0.08 }}
       onClick={goToDetail}
-      className="group bg-shiro rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col cursor-pointer"
+      className={`group bg-shiro rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col cursor-pointer ${!product.available ? 'opacity-85' : ''}`}
     >
       <div className="relative overflow-hidden aspect-square bg-washi-dark">
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+          className={`w-full h-full object-cover transition-transform duration-700 ${product.available ? 'group-hover:scale-110' : 'grayscale'}`}
           loading="lazy"
         />
 
+        {!product.available && (
+          <div className="absolute inset-0 bg-kuro/40 flex items-center justify-center">
+            <span className="bg-kuro/90 text-shiro text-xs font-semibold uppercase tracking-wider px-4 py-2 rounded-full">
+              Indisponível
+            </span>
+          </div>
+        )}
+
         <div className="absolute inset-0 bg-gradient-to-t from-kuro/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+        {product.images?.length > 1 && (
+          <span className="absolute top-2 left-2 bg-kuro/80 text-shiro text-[10px] font-medium px-2 py-0.5 rounded-full">
+            +{product.images.length - 1} fotos
+          </span>
+        )}
 
         {product.badge && (
           <motion.span
@@ -71,27 +86,33 @@ export default function ProductCard({ product, index }) {
             R$ {product.price.toFixed(2)}
           </span>
 
-          <motion.button
-            whileTap={{ scale: 0.92 }}
-            onClick={handleAdd}
-            className={`flex items-center justify-center gap-1.5 sm:gap-2 w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-medium transition-all duration-300 ${
-              added
-                ? 'bg-green-600 text-shiro'
-                : 'bg-kuro text-shiro hover:bg-aka'
-            }`}
-          >
-            {added ? (
-              <>
-                <Check size={12} className="sm:w-3.5 sm:h-3.5" />
-                Adicionado
-              </>
-            ) : (
-              <>
-                <ShoppingCart size={12} className="sm:w-3.5 sm:h-3.5" />
-                Adicionar
-              </>
-            )}
-          </motion.button>
+          {product.available ? (
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={handleAdd}
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-medium transition-all duration-300 ${
+                added
+                  ? 'bg-green-600 text-shiro'
+                  : 'bg-kuro text-shiro hover:bg-aka'
+              }`}
+            >
+              {added ? (
+                <>
+                  <Check size={12} className="sm:w-3.5 sm:h-3.5" />
+                  Adicionado
+                </>
+              ) : (
+                <>
+                  <ShoppingCart size={12} className="sm:w-3.5 sm:h-3.5" />
+                  Adicionar
+                </>
+              )}
+            </motion.button>
+          ) : (
+            <span className="flex items-center justify-center gap-1.5 w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-xs font-medium bg-washi text-kuro/50 cursor-not-allowed">
+              Indisponível
+            </span>
+          )}
         </div>
       </div>
     </motion.div>

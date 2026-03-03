@@ -71,6 +71,17 @@ export default function Footer() {
           <p>© 2026 Yawara. Todos os direitos reservados.</p>
           <p className="font-jp tracking-[0.2em]">精力善用 — 自他共栄</p>
         </div>
+        <p className="text-center text-[10px] text-shiro/20 mt-6 tracking-wide">
+          Site desenvolvido por Caio Campos{' '}
+          <a
+            href="https://instagram.com/caio_campos66"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-shiro/30 hover:text-kin transition-colors"
+          >
+            @Caio_campos66
+          </a>
+        </p>
       </div>
     </footer>
   )
