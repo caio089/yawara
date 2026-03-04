@@ -4,6 +4,7 @@ import { Trophy, Medal, Users, ExternalLink, Star, Camera } from 'lucide-react'
 const ambassador = {
   name: 'Rafaela Silva',
   role: 'Embaixadora',
+  club: 'Reação',
   description: 'Campeã Olímpica e Bicampeã Mundial, Rafaela Silva é a embaixadora oficial da Yawara Japan. Ela representa a força, a garra e a excelência do judô brasileiro no mundo.',
   image: '/images/rafaela-silva.png',
 }
@@ -12,32 +13,38 @@ const sponsored = [
   {
     name: 'Sarah Mendes',
     role: 'Patrocinada',
+    club: 'GNU',
     image: '/images/sarah-mendes.png',
     imagePosition: 'center',
   },
   {
     name: 'Guilherme Oliveira',
     role: 'Patrocinado',
+    club: 'Clube Paineiras do Morumbi',
     image: '/images/guilherme-oliveira.png',
   },
   {
     name: 'Alana Maldonado',
     role: 'Patrocinada',
+    club: 'Palmeiras',
     image: '/images/alana-maldonado.png',
   },
   {
     name: 'Marcelo Vicentini',
     role: 'Patrocinado',
+    club: 'FJES',
     image: '/images/marcelo-vicinittji.png',
   },
   {
     name: 'Stanley Torres',
     role: 'Patrocinado',
+    club: 'CT Stanley Torres',
     image: '/images/stanley-torres.png',
   },
   {
     name: 'Rafael Macedo',
     role: 'Patrocinado',
+    club: 'SOGIPA',
     image: '/images/rafael-macedo.png',
   },
 ]
@@ -46,33 +53,44 @@ const partners = [
   {
     name: 'Moacir Mendes',
     role: 'Parceiro',
+    club: 'Alliance Canoas do Norte',
     image: '/images/moacir-mendes.png',
   },
   {
-    name: 'Thiago Camilo',
+    name: 'Tiago Camilo',
     role: 'Amigo da Marca',
+    club: 'Instituto Tiago Camilo',
     image: '/images/thiago-camilo.png',
   },
   {
     name: 'João Derly',
     role: 'Parceiro',
+    club: 'Sogipa',
     image: '/images/joao-derly.png',
   },
   {
     name: 'Chrystian Silva',
     role: 'Parceiro',
+    club: 'Clube Paineiras do Morumbi',
     image: '/images/chrystian-silva.png',
   },
   {
-    name: 'Thiago dos Remédios',
+    name: 'Thiago de Remédios',
     role: 'Parceiro',
+    club: 'Estrela de Davi',
     image: '/images/thiago-remedios.png',
+  },
+  {
+    name: 'Cauã Schramm',
+    role: 'Parceiro',
+    club: 'GNU',
+    image: '/images/caua-schramm.png',
   },
 ]
 
 const stats = [
-  { icon: Trophy, value: '5', label: 'Patrocinados' },
-  { icon: Users, value: '5', label: 'Parceiros' },
+  { icon: Trophy, value: '6', label: 'Patrocinados' },
+  { icon: Users, value: '6', label: 'Parceiros' },
   { icon: Star, value: '1', label: 'Embaixadora' },
 ]
 
@@ -115,6 +133,9 @@ function PersonCard({ person, index, accentColor = 'aka' }) {
 
       <div className="p-4 text-center">
         <h3 className="text-sm font-bold text-kuro leading-tight">{person.name}</h3>
+        {person.club && (
+          <p className="text-[10px] text-kuro/50 mt-0.5 font-medium uppercase tracking-wider">{person.club}</p>
+        )}
       </div>
     </motion.div>
   )
@@ -217,6 +238,9 @@ export default function Partners() {
                     Embaixadora
                   </span>
                   <h3 className="text-3xl sm:text-4xl font-bold text-shiro mb-2">{ambassador.name}</h3>
+                  {ambassador.club && (
+                    <p className="text-shiro/70 text-sm font-medium uppercase tracking-wider mb-3">{ambassador.club}</p>
+                  )}
                   <div className="w-10 h-0.5 bg-kin mb-5" />
                   <p className="text-shiro/50 text-sm leading-relaxed">{ambassador.description}</p>
                   <div className="flex items-center gap-2 mt-6">
@@ -283,6 +307,9 @@ export default function Partners() {
                     <span className="inline-block text-[10px] font-semibold text-kin uppercase tracking-wider mb-1">Amigo da Marca</span>
                   )}
                   <h3 className="text-sm font-bold text-shiro leading-tight">{person.name}</h3>
+                  {person.club && (
+                    <p className="text-[10px] text-shiro/60 mt-0.5 font-medium uppercase tracking-wider">{person.club}</p>
+                  )}
                 </div>
               </motion.div>
             ))}
