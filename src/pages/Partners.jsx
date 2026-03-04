@@ -16,11 +16,6 @@ const sponsored = [
     imagePosition: 'center',
   },
   {
-    name: 'Rafael Macedo',
-    role: 'Patrocinado',
-    image: '/images/rafael-macedo.png',
-  },
-  {
     name: 'Guilherme Oliveira',
     role: 'Patrocinado',
     image: '/images/guilherme-oliveira.png',
@@ -39,6 +34,11 @@ const sponsored = [
     name: 'Stanley Torres',
     role: 'Patrocinado',
     image: '/images/stanley-torres.png',
+  },
+  {
+    name: 'Rafael Macedo',
+    role: 'Patrocinado',
+    image: '/images/rafael-macedo.png',
   },
 ]
 
