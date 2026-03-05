@@ -92,21 +92,31 @@ export default function Home() {
     const video = videoRef.current
     if (!video) return
     const play = () => {
+      video.muted = true
       video.play().catch(() => {})
     }
     play()
     const onPause = () => {
       if (!video.ended) play()
     }
+    const onCanPlay = () => play()
     const onVisibilityChange = () => {
       if (document.visibilityState === 'visible') play()
     }
     video.addEventListener('pause', onPause)
     video.addEventListener('ended', play)
+    video.addEventListener('canplay', onCanPlay)
     document.addEventListener('visibilitychange', onVisibilityChange)
+    const t1 = setTimeout(play, 300)
+    const t2 = setTimeout(play, 800)
+    const t3 = setTimeout(play, 1500)
     return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+      clearTimeout(t3)
       video.removeEventListener('pause', onPause)
       video.removeEventListener('ended', play)
+      video.removeEventListener('canplay', onCanPlay)
       document.removeEventListener('visibilitychange', onVisibilityChange)
     }
   }, [])
@@ -129,9 +139,10 @@ export default function Home() {
               loop
               muted
               playsInline
+              preload="auto"
               disablePictureInPicture
               disableRemotePlayback
-              className="w-full h-full object-cover opacity-80 pointer-events-none"
+              className="hero-video w-full h-full object-cover opacity-80 pointer-events-none"
               style={{ objectFit: 'cover' }}
               src="/videos/video yawara.mp4"
             />

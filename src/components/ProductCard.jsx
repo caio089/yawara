@@ -70,8 +70,8 @@ export default function ProductCard({ product, index }) {
         </div>
       </div>
 
-      <div className="p-3 sm:p-5 flex flex-col flex-1">
-        <h3 className="font-medium text-xs sm:text-sm text-kuro leading-snug mb-1">{product.name}</h3>
+      <div className="p-3 sm:p-5 flex flex-col flex-1 min-w-0 overflow-visible">
+        <h3 className="font-medium text-xs sm:text-sm text-kuro leading-snug mb-1 break-words pl-[0.15em]">{product.name}</h3>
 
         <p className="text-[10px] font-jp text-kuro/30 tracking-wider mb-2 sm:mb-3">
           {product.nameJp || product.name_jp}

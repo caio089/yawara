@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Package, PackageCheck, PackageX, DollarSign, Plus, Pencil,
-  Trash2, Eye, EyeOff, LogOut, X, Save, Search, Upload, Image,
+  Trash2, Eye, EyeOff, LogOut, X, Save, Search, Upload, Image, Copy,
 } from 'lucide-react'
 import { useAdminAuth } from '../context/AdminAuthContext'
 import { useProducts } from '../context/ProductsContext'
@@ -328,6 +328,7 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
+  const [duplicatingProduct, setDuplicatingProduct] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
 
   const filtered = products.filter((p) =>
@@ -461,6 +462,9 @@ export default function AdminDashboard() {
                           <button onClick={() => setEditingProduct(product)} className="p-2.5 sm:p-2 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center hover:bg-blue-50 text-kuro/40 hover:text-blue-600 rounded-lg transition-all touch-manipulation" title="Editar" aria-label="Editar">
                             <Pencil size={16} />
                           </button>
+                          <button onClick={() => setDuplicatingProduct(product)} className="p-2.5 sm:p-2 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center hover:bg-aka/10 text-kuro/40 hover:text-aka rounded-lg transition-all touch-manipulation" title="Duplicar" aria-label="Duplicar">
+                            <Copy size={16} />
+                          </button>
                           <button onClick={() => setDeleteConfirm(product)} className="p-2.5 sm:p-2 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center hover:bg-red-50 text-kuro/40 hover:text-red-500 rounded-lg transition-all touch-manipulation" title="Excluir" aria-label="Excluir">
                             <Trash2 size={16} />
                           </button>
@@ -497,6 +501,17 @@ export default function AdminDashboard() {
             onSave={async (updates, file, existingUrls) => {
               await updateProduct(editingProduct.id, updates, file, existingUrls)
               setEditingProduct(null)
+            }}
+          />
+        )}
+        {duplicatingProduct && (
+          <ProductForm
+            title="Duplicar Produto"
+            initial={duplicatingProduct}
+            onCancel={() => setDuplicatingProduct(null)}
+            onSave={async (product, file, existingUrls) => {
+              await addProduct(product, file, existingUrls)
+              setDuplicatingProduct(null)
             }}
           />
         )}

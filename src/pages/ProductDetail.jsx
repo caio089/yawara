@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ShoppingCart, Check, ChevronLeft, Package, Ruler, Shield, Truck, Scissors, Palette } from 'lucide-react'
 import { useProducts } from '../context/ProductsContext'
 import { useCart } from '../context/CartContext'
+import { getEmbroideryExtra } from '../utils/embroidery'
 import ProductCard from '../components/ProductCard'
 
 const categoryLabels = {
@@ -51,9 +52,13 @@ export default function ProductDetail() {
     )
   }
 
+  const embroideryExtra = getEmbroideryExtra(product.category, selectedEmbroidery)
+  const finalPrice = product.price + embroideryExtra
+
   const handleAdd = () => {
     if (!product.available) return
-    addItem(product, selectedSize)
+    const embroidery = (product.category === 'judogi' || product.category === 'faixas') ? selectedEmbroidery : undefined
+    addItem(product, selectedSize, embroidery)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
   }
@@ -89,7 +94,7 @@ export default function ProductDetail() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-6 -mt-6">
+      <section className="max-w-6xl mx-auto px-6 pt-4 sm:pt-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           <div>
             <motion.div
@@ -142,13 +147,13 @@ export default function ProductDetail() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="flex flex-col justify-center py-4"
+            className="flex flex-col justify-center py-4 pt-6 sm:pt-8 overflow-visible"
           >
-            <p className="text-aka text-xs tracking-[0.3em] uppercase font-medium mb-2">
+            <p className="text-aka text-xs tracking-[0.3em] uppercase font-medium mb-2 pl-[0.2em]">
               {categoryLabels[product.category] || product.category}
             </p>
 
-            <h1 className="text-3xl sm:text-4xl font-bold text-kuro leading-tight mb-1">
+            <h1 className="text-3xl sm:text-4xl font-bold text-kuro leading-tight mb-1 break-words">
               {product.name}
             </h1>
             <p className="text-sm font-jp text-kuro/25 tracking-wider mb-6">
@@ -232,12 +237,17 @@ export default function ProductDetail() {
               <div>
                 <p className="text-xs text-kuro/40 mb-1">Preço</p>
                 <span className="text-4xl font-bold text-kuro">
-                  R$ {product.price.toFixed(2)}
+                  R$ {finalPrice.toFixed(2)}
                 </span>
+                {((product.category === 'judogi' || product.category === 'faixas') && selectedEmbroidery && embroideryExtra > 0) && (
+                  <p className="text-xs text-kuro/50 mt-1">
+                    (base R$ {product.price.toFixed(2)} + bordado R$ {embroideryExtra.toFixed(2)})
+                  </p>
+                )}
               </div>
               {product.pixPrice ? (
                 <p className="text-sm text-green-600 font-semibold pb-1">
-                  ou R$ {product.pixPrice.toFixed(2)} no PIX
+                  ou R$ {(product.pixPrice + embroideryExtra).toFixed(2)} no PIX
                 </p>
               ) : null}
             </div>
