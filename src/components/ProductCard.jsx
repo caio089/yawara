@@ -77,10 +77,6 @@ export default function ProductCard({ product, index }) {
           {product.nameJp || product.name_jp}
         </p>
 
-        <p className="text-[10px] sm:text-xs text-kuro/50 leading-relaxed mb-3 sm:mb-4 line-clamp-2 flex-1 hidden sm:block">
-          {product.description}
-        </p>
-
         <div className="mt-auto pt-3 sm:pt-4 border-t border-washi-dark space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
           <div>
             <span className="text-base sm:text-lg font-bold text-kuro block">

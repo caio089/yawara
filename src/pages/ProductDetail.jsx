@@ -239,11 +239,7 @@ export default function ProductDetail() {
                 <p className="text-sm text-green-600 font-semibold pb-1">
                   ou R$ {product.pixPrice.toFixed(2)} no PIX
                 </p>
-              ) : (
-                <p className="text-xs text-kuro/30 pb-1">
-                  ou 3x de R$ {(product.price / 3).toFixed(2)} sem juros
-                </p>
-              )}
+              ) : null}
             </div>
 
             {product.available ? (
