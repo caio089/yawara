@@ -178,17 +178,6 @@ export default function Sidebar() {
                   <p className="text-shiro/20 text-[9px] mt-2 tracking-wider">
                     Máximo de eficiência — Prosperidade mútua
                   </p>
-                  <p className="text-shiro/15 text-[9px] mt-4 tracking-wide">
-                    Site desenvolvido por Caio Campos{' '}
-                    <a
-                      href="https://instagram.com/caio_campos66"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-shiro/30 hover:text-kin transition-colors"
-                    >
-                      @Caio_campos66
-                    </a>
-                  </p>
                 </div>
               </motion.div>
             </motion.nav>

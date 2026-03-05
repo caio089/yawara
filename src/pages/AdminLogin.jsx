@@ -55,7 +55,7 @@ export default function AdminLogin() {
             <label className="text-shiro/60 text-xs font-medium uppercase tracking-wider block mb-2">E-mail</label>
             <div className="relative">
               <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-shiro/30" />
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@yawara.com" required
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
                 className="w-full pl-11 pr-4 py-3.5 bg-shiro/5 border border-shiro/10 rounded-xl text-sm text-shiro placeholder:text-shiro/20 focus:outline-none focus:border-aka/40 focus:ring-2 focus:ring-aka/10 transition-all" />
             </div>
           </div>

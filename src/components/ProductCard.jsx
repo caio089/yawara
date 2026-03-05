@@ -82,9 +82,14 @@ export default function ProductCard({ product, index }) {
         </p>
 
         <div className="mt-auto pt-3 sm:pt-4 border-t border-washi-dark space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
-          <span className="text-base sm:text-lg font-bold text-kuro block">
-            R$ {product.price.toFixed(2)}
-          </span>
+          <div>
+            <span className="text-base sm:text-lg font-bold text-kuro block">
+              R$ {product.price.toFixed(2)}
+            </span>
+            {product.pixPrice && (
+              <span className="text-[10px] text-green-600 font-medium">ou R$ {product.pixPrice.toFixed(2)} no PIX</span>
+            )}
+          </div>
 
           {product.available ? (
             <motion.button

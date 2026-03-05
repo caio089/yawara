@@ -18,12 +18,14 @@ function parseImage(value) {
 
 function normalizeProduct(row) {
   const { image, images } = parseImage(row.image)
+  const pixPrice = row.pix_price ?? row.pixPrice
   return {
     id: row.id,
     name: row.name,
     nameJp: row.name_jp ?? row.nameJp,
     description: row.description,
     price: row.price,
+    pixPrice: pixPrice != null && pixPrice > 0 ? Number(pixPrice) : undefined,
     category: row.category,
     image,
     images,
@@ -105,12 +107,13 @@ export function ProductsProvider({ children }) {
       }
       imageUrl = urls.length > 1 ? JSON.stringify(urls) : urls[0] || imageUrl
     }
-    const { name, nameJp, description, price, category, sizes, colors, embroidery, available } = product
+    const { name, nameJp, description, price, pixPrice, category, sizes, colors, embroidery, available } = product
     const row = {
       name,
       name_jp: nameJp,
       description,
       price,
+      pix_price: pixPrice != null && pixPrice > 0 ? pixPrice : null,
       category,
       image: imageUrl,
       badge: null,
@@ -141,6 +144,9 @@ export function ProductsProvider({ children }) {
     }
     if (typeof updates.available === 'boolean') {
       row.available = updates.available
+    }
+    if (updates.pixPrice !== undefined) {
+      row.pix_price = updates.pixPrice != null && updates.pixPrice > 0 ? updates.pixPrice : null
     }
     if (imageFileOrFiles?.length) {
       const files = Array.isArray(imageFileOrFiles) ? imageFileOrFiles : [imageFileOrFiles]

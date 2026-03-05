@@ -36,6 +36,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS products_updated_at ON products;
 CREATE TRIGGER products_updated_at
   BEFORE UPDATE ON products
   FOR EACH ROW
@@ -47,12 +48,14 @@ CREATE TRIGGER products_updated_at
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 
 -- Qualquer pessoa pode VER produtos (loja pública)
+DROP POLICY IF EXISTS "Produtos visíveis publicamente" ON products;
 CREATE POLICY "Produtos visíveis publicamente"
   ON products
   FOR SELECT
   USING (true);
 
 -- Apenas usuários autenticados podem INSERIR
+DROP POLICY IF EXISTS "Admin pode inserir produtos" ON products;
 CREATE POLICY "Admin pode inserir produtos"
   ON products
   FOR INSERT
@@ -60,6 +63,7 @@ CREATE POLICY "Admin pode inserir produtos"
   WITH CHECK (true);
 
 -- Apenas usuários autenticados podem ATUALIZAR
+DROP POLICY IF EXISTS "Admin pode atualizar produtos" ON products;
 CREATE POLICY "Admin pode atualizar produtos"
   ON products
   FOR UPDATE
@@ -68,6 +72,7 @@ CREATE POLICY "Admin pode atualizar produtos"
   WITH CHECK (true);
 
 -- Apenas usuários autenticados podem DELETAR
+DROP POLICY IF EXISTS "Admin pode deletar produtos" ON products;
 CREATE POLICY "Admin pode deletar produtos"
   ON products
   FOR DELETE
@@ -76,10 +81,6 @@ CREATE POLICY "Admin pode deletar produtos"
 
 -- 3. STORAGE — BUCKET DE IMAGENS
 -- ============================================================
--- Vá em Storage no Dashboard e crie o bucket "product-images"
--- Marque como PUBLIC
--- Ou execute via SQL:
-
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('product-images', 'product-images', true)
 ON CONFLICT (id) DO NOTHING;
@@ -87,28 +88,28 @@ ON CONFLICT (id) DO NOTHING;
 -- 4. STORAGE POLICIES — IMAGENS
 -- ============================================================
 
--- Qualquer pessoa pode VER as imagens (público)
+DROP POLICY IF EXISTS "Imagens públicas para leitura" ON storage.objects;
 CREATE POLICY "Imagens públicas para leitura"
   ON storage.objects
   FOR SELECT
   TO public
   USING (bucket_id = 'product-images');
 
--- Apenas autenticados podem fazer UPLOAD
+DROP POLICY IF EXISTS "Admin pode fazer upload de imagens" ON storage.objects;
 CREATE POLICY "Admin pode fazer upload de imagens"
   ON storage.objects
   FOR INSERT
   TO authenticated
   WITH CHECK (bucket_id = 'product-images');
 
--- Apenas autenticados podem ATUALIZAR imagens
+DROP POLICY IF EXISTS "Admin pode atualizar imagens" ON storage.objects;
 CREATE POLICY "Admin pode atualizar imagens"
   ON storage.objects
   FOR UPDATE
   TO authenticated
   USING (bucket_id = 'product-images');
 
--- Apenas autenticados podem DELETAR imagens
+DROP POLICY IF EXISTS "Admin pode deletar imagens" ON storage.objects;
 CREATE POLICY "Admin pode deletar imagens"
   ON storage.objects
   FOR DELETE
@@ -121,13 +122,13 @@ CREATE POLICY "Admin pode deletar imagens"
 
 /*
 INSERT INTO products (name, name_jp, description, price, category, image, badge, sizes, colors, embroidery, available) VALUES
-  ('Judogi Competição Elite', '柔道着エリート', 'Judogi profissional de competição, tecido IJF approved, 100% algodão japonês com gramatura 750g/m².', 899.90, 'judogi', 'https://images.unsplash.com/photo-1555597673-b21d5c935865?w=600&h=600&fit=crop', 'Mais Vendido', ARRAY['1,50','1,55','1,60','1,65','1,70','1,75','1,80','Enviar medidas via WhatsApp'], ARRAY['Azul','Branco'], ARRAY['Bordado na Lapela e na Calça','Bordado no Peito','Sem Bordado'], true),
-  ('Judogi Treino Reforçado', '練習用柔道着', 'Judogi para treino diário, tecido resistente de 550g/m².', 449.90, 'judogi', 'https://images.unsplash.com/photo-1564415315949-7a0c4c73aab4?w=600&h=600&fit=crop', NULL, ARRAY['1,50','1,55','1,60','1,65','1,70','1,75','1,80','Enviar medidas via WhatsApp'], ARRAY['Azul','Branco'], ARRAY['Bordado na Lapela e na Calça','Bordado no Peito','Sem Bordado'], true),
-  ('Faixa Preta Seda Japonesa', '黒帯', 'Faixa preta premium em seda japonesa com bordado personalizado.', 289.90, 'faixas', 'https://images.unsplash.com/photo-1598518142144-389aa906bcb2?w=600&h=600&fit=crop', 'Premium', ARRAY['4','5','6','7'], NULL, NULL, true),
-  ('Tatame EVA Premium 40mm', '畳', 'Tatame de EVA de alta densidade, 40mm de espessura, 1m x 1m.', 189.90, 'tatame', 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&h=600&fit=crop', 'Novo', NULL, NULL, NULL, true),
-  ('Bolsa Esportiva Yawara', 'スポーツバッグ', 'Bolsa esportiva exclusiva Yawara com compartimentos para judogi.', 249.90, 'acessorios', 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=600&fit=crop', 'Exclusivo', NULL, NULL, NULL, true);
+  ('Judogi Competição Elite', '柔道着エリート', 'Judogi profissional de competição.', 899.90, 'judogi', 'https://...', 'Mais Vendido', ARRAY['1,50','1,55','1,60'], ARRAY['Azul','Branco'], ARRAY['Bordado na Lapela','Sem Bordado'], true),
+  ...
 */
 
--- 6. MIGRAÇÃO — Se a tabela já existe e falta a coluna embroidery
+-- 6. MIGRAÇÕES — Colunas adicionais (tabela já existente)
 -- ============================================================
--- ALTER TABLE products ADD COLUMN IF NOT EXISTS embroidery TEXT[];
+-- Execute apenas as linhas abaixo se a tabela products já existe
+
+ALTER TABLE products ADD COLUMN IF NOT EXISTS embroidery TEXT[];
+ALTER TABLE products ADD COLUMN IF NOT EXISTS pix_price NUMERIC(10,2) DEFAULT NULL;

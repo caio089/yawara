@@ -1,11 +1,20 @@
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
+const navItems = [
+  { label: 'Home', path: '/' },
+  { label: 'Catálogo', path: '/catalogo' },
+  { label: 'Sobre Nós', path: '/sobre' },
+  { label: 'Carrinho', path: '/carrinho' },
+]
+
 export default function Footer() {
+  const navigate = useNavigate()
   return (
     <footer className="bg-kuro text-shiro/60 relative overflow-hidden">
       <div className="absolute inset-0 seigaiha-pattern opacity-20 pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto px-6 py-16">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           <div>
             <h3 className="font-jp text-2xl text-shiro font-bold tracking-wider mb-2">
@@ -22,12 +31,16 @@ export default function Footer() {
             <h4 className="text-shiro font-medium mb-4 text-sm tracking-wider uppercase">
               Navegação
             </h4>
-            <ul className="space-y-3 text-sm">
-              {['Home', 'Catálogo', 'Sobre Nós', 'Carrinho'].map((item) => (
-                <li key={item}>
-                  <span className="hover:text-kin transition-colors cursor-pointer">
-                    {item}
-                  </span>
+            <ul className="space-y-1 text-sm">
+              {navItems.map(({ label, path }) => (
+                <li key={path}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(path)}
+                    className="w-full text-left hover:text-kin transition-colors py-3 -my-1 px-1 min-h-[44px] flex items-center touch-manipulation text-inherit font-inherit cursor-pointer bg-transparent border-0"
+                  >
+                    {label}
+                  </button>
                 </li>
               ))}
             </ul>
@@ -77,20 +90,9 @@ export default function Footer() {
         />
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-shiro/30">
-          <p>© 2026 Yawara. Todos os direitos reservados.</p>
+          <p>© Yawara Japan. Todos os direitos reservados.</p>
           <p className="font-jp tracking-[0.2em]">精力善用 — 自他共栄</p>
         </div>
-        <p className="text-center text-[10px] text-shiro/20 mt-6 tracking-wide">
-          Site desenvolvido por Caio Campos{' '}
-          <a
-            href="https://instagram.com/caio_campos66"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-shiro/30 hover:text-kin transition-colors"
-          >
-            @Caio_campos66
-          </a>
-        </p>
       </div>
     </footer>
   )

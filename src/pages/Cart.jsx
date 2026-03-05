@@ -89,21 +89,21 @@ export default function Cart() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-6 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Items List */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 gap-4">
               <button
                 onClick={() => navigate('/catalogo')}
-                className="flex items-center gap-2 text-kuro/50 hover:text-kuro text-sm transition-colors"
+                className="flex items-center gap-2 text-kuro/50 hover:text-kuro text-sm transition-colors min-h-[44px] py-2 touch-manipulation"
               >
-                <ArrowLeft size={16} />
+                <ArrowLeft size={18} />
                 Continuar comprando
               </button>
               <button
                 onClick={clearCart}
-                className="text-xs text-kuro/30 hover:text-aka transition-colors"
+                className="text-xs text-kuro/30 hover:text-aka transition-colors min-h-[44px] py-2 px-2 touch-manipulation"
               >
                 Limpar carrinho
               </button>
@@ -118,65 +118,80 @@ export default function Cart() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20, height: 0, marginBottom: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-shiro rounded-2xl p-5 flex gap-5 items-center shadow-sm"
+                  className="bg-shiro rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5"
                 >
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden flex-shrink-0 bg-washi-dark">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="flex gap-4 sm:flex-1 sm:min-w-0">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden flex-shrink-0 bg-washi-dark">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-sm text-kuro truncate">
+                        {item.name}
+                      </h3>
+                      <p className="text-[10px] font-jp text-kuro/25 tracking-wider mt-0.5 truncate">
+                        {item.nameJp}
+                      </p>
+                      {item.size && (
+                        <span className="inline-block mt-2 text-[10px] bg-washi px-2 py-1 rounded text-kuro/50">
+                          Tam: {item.size}
+                        </span>
+                      )}
+                      <div className="mt-2">
+                        <p className="text-sm font-bold text-kuro">
+                          R$ {item.price.toFixed(2)}
+                        </p>
+                        {item.pixPrice && (
+                          <p className="text-[10px] text-green-600 font-medium">ou R$ {item.pixPrice.toFixed(2)} no PIX</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm text-kuro truncate">
-                      {item.name}
-                    </h3>
-                    <p className="text-[10px] font-jp text-kuro/25 tracking-wider mt-0.5">
-                      {item.nameJp}
-                    </p>
-                    {item.size && (
-                      <span className="inline-block mt-2 text-[10px] bg-washi px-2 py-0.5 rounded text-kuro/50">
-                        Tam: {item.size}
+                  <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-3 border-t border-washi-dark pt-4 sm:border-0 sm:pt-0">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateQuantity(item.id, item.size, item.quantity - 1)
+                        }
+                        className="w-10 h-10 sm:w-9 sm:h-9 rounded-xl bg-washi flex items-center justify-center text-kuro/60 hover:bg-kuro/10 active:bg-kuro/20 transition-colors touch-manipulation"
+                        aria-label="Diminuir quantidade"
+                      >
+                        <Minus size={16} />
+                      </button>
+                      <span className="w-8 sm:w-8 text-center text-sm font-medium text-kuro min-w-[2rem]">
+                        {item.quantity}
                       </span>
-                    )}
-                    <p className="text-sm font-bold text-kuro mt-2">
-                      R$ {item.price.toFixed(2)}
-                    </p>
-                  </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateQuantity(item.id, item.size, item.quantity + 1)
+                        }
+                        className="w-10 h-10 sm:w-9 sm:h-9 rounded-xl bg-washi flex items-center justify-center text-kuro/60 hover:bg-kuro/10 active:bg-kuro/20 transition-colors touch-manipulation"
+                        aria-label="Aumentar quantidade"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        updateQuantity(item.id, item.size, item.quantity - 1)
-                      }
-                      className="w-8 h-8 rounded-lg bg-washi flex items-center justify-center text-kuro/50 hover:bg-kuro/10 transition-colors"
-                    >
-                      <Minus size={14} />
-                    </button>
-                    <span className="w-8 text-center text-sm font-medium text-kuro">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() =>
-                        updateQuantity(item.id, item.size, item.quantity + 1)
-                      }
-                      className="w-8 h-8 rounded-lg bg-washi flex items-center justify-center text-kuro/50 hover:bg-kuro/10 transition-colors"
-                    >
-                      <Plus size={14} />
-                    </button>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-kuro">
-                      R$ {(item.price * item.quantity).toFixed(2)}
-                    </p>
-                    <button
-                      onClick={() => removeItem(item.id, item.size)}
-                      className="mt-2 text-kuro/20 hover:text-aka transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <p className="text-sm font-bold text-kuro whitespace-nowrap">
+                        R$ {(item.price * item.quantity).toFixed(2)}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.id, item.size)}
+                        className="p-2.5 -m-2.5 text-kuro/30 hover:text-aka active:text-aka transition-colors touch-manipulation"
+                        aria-label="Remover item"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -189,7 +204,7 @@ export default function Cart() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-shiro rounded-2xl p-8 shadow-sm sticky top-8"
+              className="bg-shiro rounded-2xl p-6 sm:p-8 shadow-sm sticky top-20 sm:top-8"
             >
               <h2 className="font-semibold text-kuro mb-6 flex items-center gap-2">
                 <Package size={18} className="text-aka" />
@@ -215,10 +230,11 @@ export default function Cart() {
               </div>
 
               <motion.button
+                type="button"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={sendToWhatsApp}
-                className="w-full mt-8 bg-green-600 hover:bg-green-700 text-shiro py-4 rounded-xl font-medium flex items-center justify-center gap-3 transition-all duration-300 shadow-lg shadow-green-600/20 text-sm"
+                className="w-full mt-6 sm:mt-8 bg-green-600 hover:bg-green-700 text-shiro py-4 rounded-xl font-medium flex items-center justify-center gap-3 transition-all duration-300 shadow-lg shadow-green-600/20 text-sm min-h-[52px] touch-manipulation"
               >
                 <MessageCircle size={18} />
                 Finalizar pelo WhatsApp

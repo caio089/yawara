@@ -228,16 +228,22 @@ export default function ProductDetail() {
               </div>
             )}
 
-            <div className="flex items-end gap-6 mb-8">
+            <div className="flex flex-wrap items-end gap-6 mb-8">
               <div>
                 <p className="text-xs text-kuro/40 mb-1">Preço</p>
                 <span className="text-4xl font-bold text-kuro">
                   R$ {product.price.toFixed(2)}
                 </span>
               </div>
-              <p className="text-xs text-kuro/30 pb-1">
-                ou 3x de R$ {(product.price / 3).toFixed(2)} sem juros
-              </p>
+              {product.pixPrice ? (
+                <p className="text-sm text-green-600 font-semibold pb-1">
+                  ou R$ {product.pixPrice.toFixed(2)} no PIX
+                </p>
+              ) : (
+                <p className="text-xs text-kuro/30 pb-1">
+                  ou 3x de R$ {(product.price / 3).toFixed(2)} sem juros
+                </p>
+              )}
             </div>
 
             {product.available ? (

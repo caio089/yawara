@@ -39,6 +39,7 @@ function ProductForm({ initial, onSave, onCancel, title }) {
     nameJp: initial?.nameJp || initial?.name_jp || '',
     description: initial?.description || '',
     price: initial?.price?.toString() || '',
+    pixPrice: initial?.pixPrice != null ? String(initial.pixPrice) : (initial?.pix_price != null ? String(initial.pix_price) : ''),
     category: initial?.category || 'judogi',
     available: initial?.available !== false,
     sizes: Array.isArray(initial?.sizes) ? initial.sizes : [],
@@ -102,6 +103,7 @@ function ProductForm({ initial, onSave, onCancel, title }) {
       nameJp: form.nameJp,
       description: form.description,
       price: parseFloat(form.price) || 0,
+      pixPrice: form.pixPrice ? parseFloat(form.pixPrice) : null,
       category: form.category,
       available: form.available,
       image: imageValue,
@@ -153,6 +155,7 @@ function ProductForm({ initial, onSave, onCancel, title }) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Preço (R$) *" value={form.price} onChange={(v) => setForm({ ...form, price: v })} type="number" placeholder="0.00" required />
+            <Field label="Valor promocional PIX (R$) — opcional" value={form.pixPrice} onChange={(v) => setForm({ ...form, pixPrice: v })} type="number" placeholder="Ex: 89.90" />
             <div>
               <label className="text-xs font-medium text-kuro/50 uppercase tracking-wider block mb-1.5">Categoria</label>
               <select

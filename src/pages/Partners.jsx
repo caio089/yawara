@@ -20,7 +20,7 @@ const sponsored = [
   {
     name: 'Guilherme Oliveira',
     role: 'Patrocinado',
-    club: 'Clube Paineiras do Morumbi',
+    club: 'Clube Paineiras do Morumby',
     image: '/images/guilherme-oliveira.png',
   },
   {
@@ -53,7 +53,7 @@ const partners = [
   {
     name: 'Moacir Mendes',
     role: 'Parceiro',
-    club: 'Alliance Canoas do Norte',
+    club: 'Alliance Canoas Norte',
     image: '/images/moacir-mendes.png',
   },
   {
@@ -71,13 +71,13 @@ const partners = [
   {
     name: 'Chrystian Silva',
     role: 'Parceiro',
-    club: 'Clube Paineiras do Morumbi',
+    club: 'Clube Paineiras do Morumby',
     image: '/images/chrystian-silva.png',
   },
   {
     name: 'Thiago de Remédios',
     role: 'Parceiro',
-    club: 'Estrela de Davi',
+    club: 'Estrela de Davi - PA',
     image: '/images/thiago-remedios.png',
   },
   {
