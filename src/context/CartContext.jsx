@@ -4,7 +4,7 @@ import { getEmbroideryExtra } from '../utils/embroidery'
 const CartContext = createContext()
 
 function itemKey(item) {
-  return `${item.id}|${item.size ?? ''}|${item.embroidery ?? ''}`
+  return `${item.id}|${item.size ?? ''}|${item.embroidery ?? ''}|${item.gender ?? ''}`
 }
 
 const cartReducer = (state, action) => {
@@ -26,21 +26,21 @@ const cartReducer = (state, action) => {
       }
     }
     case 'REMOVE_ITEM': {
-      const { id, size, embroidery } = action.payload
+      const { id, size, embroidery, gender } = action.payload
       return {
         ...state,
         items: state.items.filter(
-          (item) => !(item.id === id && (item.size ?? '') === (size ?? '') && (item.embroidery ?? '') === (embroidery ?? ''))
+          (item) => !(item.id === id && (item.size ?? '') === (size ?? '') && (item.embroidery ?? '') === (embroidery ?? '') && (item.gender ?? '') === (gender ?? ''))
         ),
       }
     }
     case 'UPDATE_QUANTITY': {
-      const { id, size, embroidery, quantity } = action.payload
+      const { id, size, embroidery, gender, quantity } = action.payload
       return {
         ...state,
         items: state.items
           .map((item) =>
-            item.id === id && (item.size ?? '') === (size ?? '') && (item.embroidery ?? '') === (embroidery ?? '')
+            item.id === id && (item.size ?? '') === (size ?? '') && (item.embroidery ?? '') === (embroidery ?? '') && (item.gender ?? '') === (gender ?? '')
               ? { ...item, quantity: Math.max(0, quantity) }
               : item
           )
@@ -57,16 +57,16 @@ const cartReducer = (state, action) => {
 export function CartProvider({ children }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] })
 
-  const addItem = (product, size = '', embroidery = '') => {
-    dispatch({ type: 'ADD_ITEM', payload: { ...product, size, embroidery: embroidery || undefined } })
+  const addItem = (product, size = '', embroidery = '', gender = '') => {
+    dispatch({ type: 'ADD_ITEM', payload: { ...product, size, embroidery: embroidery || undefined, gender: gender || undefined } })
   }
 
-  const removeItem = (id, size = '', embroidery = '') => {
-    dispatch({ type: 'REMOVE_ITEM', payload: { id, size, embroidery: embroidery || '' } })
+  const removeItem = (id, size = '', embroidery = '', gender = '') => {
+    dispatch({ type: 'REMOVE_ITEM', payload: { id, size, embroidery: embroidery || '', gender: gender || '' } })
   }
 
-  const updateQuantity = (id, size, quantity, embroidery = '') => {
-    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, size, embroidery: embroidery || '', quantity } })
+  const updateQuantity = (id, size, quantity, embroidery = '', gender = '') => {
+    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, size, embroidery: embroidery || '', gender: gender || '', quantity } })
   }
 
   const clearCart = () => {
@@ -90,6 +90,7 @@ export function CartProvider({ children }) {
       const unitPrice = item.price + embroideryExtra
       message += `\n*${index + 1}. ${item.name}*\n`
       if (item.size) message += `   Tamanho: ${item.size}\n`
+      if (item.gender) message += `   Gênero: ${item.gender.charAt(0).toUpperCase() + item.gender.slice(1)}\n`
       if (item.embroidery) message += `   Bordado: ${item.embroidery}${embroideryExtra > 0 ? ` (+R$ ${embroideryExtra.toFixed(2)})` : ''}\n`
       message += `   Qtd: ${item.quantity} × R$ ${unitPrice.toFixed(2)}\n`
       message += `   Subtotal: R$ ${(unitPrice * item.quantity).toFixed(2)}\n`

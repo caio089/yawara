@@ -32,6 +32,7 @@ export default function ProductDetail() {
   const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || '')
   const [selectedColor, setSelectedColor] = useState(product?.colors?.[0] || '')
   const [selectedEmbroidery, setSelectedEmbroidery] = useState(product?.embroidery?.[0] || '')
+  const [selectedGender, setSelectedGender] = useState('masculino')
 
   const related = useMemo(() => {
     if (!product) return []
@@ -58,7 +59,8 @@ export default function ProductDetail() {
   const handleAdd = () => {
     if (!product.available) return
     const embroidery = (product.category === 'judogi' || product.category === 'faixas') ? selectedEmbroidery : undefined
-    addItem(product, selectedSize, embroidery)
+    const gender = (product.category === 'sobretudo' || product.category === 'conjunto') ? selectedGender : undefined
+    addItem(product, selectedSize, embroidery, gender)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
   }
@@ -204,6 +206,30 @@ export default function ProductDetail() {
                       }`}
                     >
                       {color}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(product.category === 'sobretudo' || product.category === 'conjunto') && (
+              <div className="mb-6">
+                <p className="text-xs font-medium text-kuro/50 mb-3 uppercase tracking-wider">
+                  Gênero
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  {['masculino', 'feminino'].map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setSelectedGender(opt)}
+                      className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 capitalize ${
+                        selectedGender === opt
+                          ? 'bg-kuro text-shiro shadow-md'
+                          : 'bg-washi text-kuro/60 hover:bg-kuro/10 border border-washi-dark'
+                      }`}
+                    >
+                      {opt}
                     </button>
                   ))}
                 </div>
