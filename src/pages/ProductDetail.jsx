@@ -53,13 +53,15 @@ export default function ProductDetail() {
     )
   }
 
-  const embroideryExtra = getEmbroideryExtra(product.category, selectedEmbroidery)
+  const showGenderOption = (product.category === 'sobretudo' || product.category === 'conjunto') &&
+    !(product.name.toLowerCase().includes('sauna') && product.name.toLowerCase().includes('mizuno'))
+  const embroideryExtra = getEmbroideryExtra(product.category, selectedEmbroidery, product.name)
   const finalPrice = product.price + embroideryExtra
 
   const handleAdd = () => {
     if (!product.available) return
     const embroidery = (product.category === 'judogi' || product.category === 'faixas') ? selectedEmbroidery : undefined
-    const gender = (product.category === 'sobretudo' || product.category === 'conjunto') ? selectedGender : undefined
+    const gender = showGenderOption ? selectedGender : undefined
     addItem(product, selectedSize, embroidery, gender)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
@@ -212,7 +214,7 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {(product.category === 'sobretudo' || product.category === 'conjunto') && (
+            {showGenderOption && (
               <div className="mb-6">
                 <p className="text-xs font-medium text-kuro/50 mb-3 uppercase tracking-wider">
                   Gênero

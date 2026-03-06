@@ -75,7 +75,7 @@ export function CartProvider({ children }) {
 
   const totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0)
   const totalPrice = state.items.reduce((sum, item) => {
-    const unitPrice = item.price + getEmbroideryExtra(item.category, item.embroidery)
+    const unitPrice = item.price + getEmbroideryExtra(item.category, item.embroidery, item.name)
     return sum + unitPrice * item.quantity
   }, 0)
 
@@ -86,7 +86,7 @@ export function CartProvider({ children }) {
     message += '━━━━━━━━━━━━━━━━━━━━\n'
 
     state.items.forEach((item, index) => {
-      const embroideryExtra = getEmbroideryExtra(item.category, item.embroidery)
+      const embroideryExtra = getEmbroideryExtra(item.category, item.embroidery, item.name)
       const unitPrice = item.price + embroideryExtra
       message += `\n*${index + 1}. ${item.name}*\n`
       if (item.size) message += `   Tamanho: ${item.size}\n`

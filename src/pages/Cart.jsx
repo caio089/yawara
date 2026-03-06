@@ -150,20 +150,20 @@ export default function Cart() {
                       {item.embroidery && (
                         <span className="inline-block mt-1.5 text-[10px] bg-aka/10 text-aka px-2 py-1 rounded">
                           {item.embroidery}
-                          {getEmbroideryExtra(item.category, item.embroidery) > 0 && (
-                            <> (+R$ {getEmbroideryExtra(item.category, item.embroidery).toFixed(2)})</>
+                          {getEmbroideryExtra(item.category, item.embroidery, item.name) > 0 && (
+                            <> (+R$ {getEmbroideryExtra(item.category, item.embroidery, item.name).toFixed(2)})</>
                           )}
                         </span>
                       )}
                       <div className="mt-2">
                         <p className="text-sm font-bold text-kuro">
-                          R$ {(item.price + getEmbroideryExtra(item.category, item.embroidery)).toFixed(2)}
-                          {getEmbroideryExtra(item.category, item.embroidery) > 0 && (
+                          R$ {(item.price + getEmbroideryExtra(item.category, item.embroidery, item.name)).toFixed(2)}
+                          {getEmbroideryExtra(item.category, item.embroidery, item.name) > 0 && (
                             <span className="text-[10px] font-normal text-kuro/50 ml-1">un.</span>
                           )}
                         </p>
                         {item.pixPrice && (
-                          <p className="text-[10px] text-green-600 font-medium">ou R$ {(item.pixPrice + getEmbroideryExtra(item.category, item.embroidery)).toFixed(2)} no PIX</p>
+                          <p className="text-[10px] text-green-600 font-medium">ou R$ {(item.pixPrice + getEmbroideryExtra(item.category, item.embroidery, item.name)).toFixed(2)} no PIX</p>
                         )}
                       </div>
                     </div>
@@ -198,7 +198,7 @@ export default function Cart() {
 
                     <div className="flex items-center gap-3">
                       <p className="text-sm font-bold text-kuro whitespace-nowrap">
-                        R$ {((item.price + getEmbroideryExtra(item.category, item.embroidery)) * item.quantity).toFixed(2)}
+                        R$ {((item.price + getEmbroideryExtra(item.category, item.embroidery, item.name)) * item.quantity).toFixed(2)}
                       </p>
                       <button
                         type="button"

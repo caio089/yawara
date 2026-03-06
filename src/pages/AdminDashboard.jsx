@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Package, PackageCheck, PackageX, DollarSign, Plus, Pencil,
+  Package, PackageCheck, Receipt, DollarSign, Plus, Pencil,
   Trash2, Eye, EyeOff, LogOut, X, Save, Search, Upload, Image, Copy,
 } from 'lucide-react'
 import { useAdminAuth } from '../context/AdminAuthContext'
@@ -336,10 +336,11 @@ export default function AdminDashboard() {
     p.category.includes(search.toLowerCase())
   )
 
+  const ticketMedio = products.length > 0 ? totalValueProducts / products.length : 0
   const stats = [
     { label: 'Total de Produtos', value: products.length, icon: Package, color: 'bg-blue-500/10 text-blue-600' },
     { label: 'Produtos Ativos', value: activeProducts.length, icon: PackageCheck, color: 'bg-green-500/10 text-green-600' },
-    { label: 'Indisponíveis', value: products.length - activeProducts.length, icon: PackageX, color: 'bg-orange-500/10 text-orange-600' },
+    { label: 'Ticket médio', value: `R$ ${ticketMedio.toFixed(2)}`, icon: Receipt, color: 'bg-orange-500/10 text-orange-600' },
     { label: 'Valor total em produtos', value: `R$ ${totalValueProducts.toFixed(2)}`, icon: DollarSign, color: 'bg-purple-500/10 text-purple-600' },
   ]
 
