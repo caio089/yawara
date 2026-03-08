@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS products (
   name_jp TEXT,
   description TEXT,
   price NUMERIC(10,2) NOT NULL DEFAULT 0,
-  category TEXT NOT NULL DEFAULT 'acessorios',
+  category TEXT NOT NULL DEFAULT 'livros',
   image TEXT,
   badge TEXT,
   sizes TEXT[],

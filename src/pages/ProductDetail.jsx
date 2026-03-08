@@ -16,7 +16,7 @@ const categoryLabels = {
   sobretudo: 'Sobretudo',
   conjunto: 'Conjunto',
   caneca: 'Caneca',
-  acessorios: 'Acessório',
+  livros: 'Livro',
 }
 
 export default function ProductDetail() {

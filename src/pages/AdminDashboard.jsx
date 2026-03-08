@@ -17,7 +17,7 @@ const categoryOptions = [
   { value: 'sobretudo', label: 'Sobretudo' },
   { value: 'conjunto', label: 'Conjunto' },
   { value: 'caneca', label: 'Caneca' },
-  { value: 'acessorios', label: 'Acessórios' },
+  { value: 'livros', label: 'Livros' },
 ]
 
 const JUDOGI_SIZES = ['1,50', '1,55', '1,60', '1,65', '1,70', '1,75', '1,80', 'Enviar medidas via WhatsApp']

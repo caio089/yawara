@@ -57,7 +57,7 @@ export const products = [
     nameJp: 'マウスガード',
     description: 'Protetor bucal moldável profissional, material termoplástico de grau médico. Proteção máxima com respiração livre.',
     price: 69.90,
-    category: 'acessorios',
+    category: 'livros',
     image: 'https://images.unsplash.com/photo-1517438322307-e67111335449?w=600&h=600&fit=crop',
   },
   {
@@ -66,7 +66,7 @@ export const products = [
     nameJp: 'スポーツバッグ',
     description: 'Bolsa esportiva exclusiva Yawara com compartimentos para judogi, faixa e acessórios. Material impermeável e design japonês.',
     price: 249.90,
-    category: 'acessorios',
+    category: 'livros',
     image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=600&fit=crop',
     badge: 'Exclusivo',
   },
@@ -76,7 +76,7 @@ export const products = [
     nameJp: '衛生キット',
     description: 'Kit completo para higienização de tatame. Inclui spray antibacteriano, pano de microfibra e escova especial.',
     price: 129.90,
-    category: 'acessorios',
+    category: 'livros',
     image: 'https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?w=600&h=600&fit=crop',
   },
   {
@@ -85,7 +85,7 @@ export const products = [
     nameJp: '草履',
     description: 'Chinelo Zori tradicional japonês para uso no dojo. Palha natural com tiras de tecido, importado diretamente do Japão.',
     price: 159.90,
-    category: 'acessorios',
+    category: 'livros',
     image: 'https://images.unsplash.com/photo-1603487742131-4160ec999306?w=600&h=600&fit=crop',
   },
   {
@@ -94,7 +94,7 @@ export const products = [
     nameJp: '膝サポーター',
     description: 'Joelheira de neoprene com reforço lateral, ideal para proteção durante treinos de ne-waza. Ajuste anatômico.',
     price: 99.90,
-    category: 'acessorios',
+    category: 'livros',
     image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=600&fit=crop',
   },
   {
@@ -113,7 +113,7 @@ export const products = [
     nameJp: '柔道の芸術',
     description: 'Livro ilustrado sobre a história e filosofia do judô, desde Jigoro Kano até os dias atuais. Edição bilíngue português-japonês.',
     price: 149.90,
-    category: 'acessorios',
+    category: 'livros',
     image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&h=600&fit=crop',
   },
 ]
@@ -128,5 +128,5 @@ export const categories = [
   { id: 'sobretudo', name: 'Sobretudos', nameJp: 'コート' },
   { id: 'conjunto', name: 'Conjuntos', nameJp: 'セット' },
   { id: 'caneca', name: 'Canecas', nameJp: 'マグカップ' },
-  { id: 'acessorios', name: 'Acessórios', nameJp: 'アクセサリー' },
+  { id: 'livros', name: 'Livros', nameJp: '本' },
 ]
