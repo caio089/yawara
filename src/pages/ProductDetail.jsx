@@ -105,12 +105,12 @@ export default function ProductDetail() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="relative rounded-2xl overflow-hidden shadow-xl bg-washi-dark aspect-square"
+              className="relative rounded-2xl overflow-hidden shadow-xl bg-washi-dark flex items-center justify-center min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] aspect-[4/5] max-h-[85vh]"
             >
               <img
                 src={images[selectedImageIndex] || product.image}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
               {images.length > 1 && (
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 bg-kuro/70 backdrop-blur-sm rounded-full px-2 py-1.5">
@@ -140,7 +140,7 @@ export default function ProductDetail() {
                     onClick={() => setSelectedImageIndex(i)}
                     className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${i === selectedImageIndex ? 'border-kuro shadow-md' : 'border-washi-dark hover:border-kuro/50'}`}
                   >
-                    <img src={src} alt="" className="w-full h-full object-cover" />
+                    <img src={src} alt="" className="w-full h-full object-contain bg-washi-dark" />
                   </button>
                 ))}
               </div>
