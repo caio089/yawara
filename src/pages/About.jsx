@@ -33,7 +33,7 @@ const values = [
     icon: Globe,
     title: 'Tradição',
     titleJp: '伝統',
-    desc: 'Honramos a tradição milenar do judô japonês trazendo o autêntico para o Brasil, sem compromissos.',
+    desc: 'Honramos a tradição milenar do judô japonês trazendo o autêntico para o Brasil.',
   },
 ]
 
