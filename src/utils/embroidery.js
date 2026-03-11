@@ -1,7 +1,7 @@
 /**
  * Valores adicionais de bordado (em reais).
  * Judogi: peito +R$ 370 | lapela/calça +R$ 190
- * Faixa: com bordado +R$ 100
+ * Faixa: sem bordado R$ 450 | com bordado R$ 550 | bordado sombreado R$ 650 (base + extra)
  */
 export const JUDOGI_EMBROIDERY_EXTRA = {
   'Bordado no Peito': 370,
@@ -10,8 +10,10 @@ export const JUDOGI_EMBROIDERY_EXTRA = {
 }
 
 export const FAIXA_EMBROIDERY_EXTRA = {
-  'Com bordado': 100,
   'Sem bordado': 0,
+  'Com bordado': 100,
+  'Bordado sombreado': 200,
+  'Bordado duplo': 200, // legado, mesmo valor que Bordado sombreado
 }
 
 export function getJudogiEmbroideryExtra(embroideryOption) {

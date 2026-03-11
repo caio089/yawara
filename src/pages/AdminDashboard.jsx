@@ -23,7 +23,7 @@ const categoryOptions = [
 const JUDOGI_SIZES = ['1,50', '1,55', '1,60', '1,65', '1,70', '1,75', '1,80', 'Enviar medidas via WhatsApp']
 const JUDOGI_COLORS = ['Azul', 'Branco']
 const JUDOGI_EMBROIDERY = ['Bordado na Lapela e na Calça', 'Bordado no Peito', 'Sem Bordado']
-const FAIXA_EMBROIDERY = ['Com bordado', 'Sem bordado']
+const FAIXA_EMBROIDERY = ['Sem bordado', 'Com bordado', 'Bordado sombreado']
 
 function ProductForm({ initial, onSave, onCancel, title }) {
   const fileInputRef = useRef(null)
