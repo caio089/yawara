@@ -11,6 +11,13 @@ const ambassador = {
 
 const sponsored = [
   {
+    name: 'Sarah Souza',
+    role: 'Patrocinada',
+    club: 'Esporte Clube Pinheiros',
+    image: '/images/sarah-souza.png',
+    imagePosition: 'center',
+  },
+  {
     name: 'Sarah Mendes',
     role: 'Patrocinada',
     club: 'GNU',
@@ -18,16 +25,16 @@ const sponsored = [
     imagePosition: 'center',
   },
   {
-    name: 'Guilherme Oliveira',
-    role: 'Patrocinado',
-    club: 'Clube Paineiras do Morumby',
-    image: '/images/guilherme-oliveira.png',
-  },
-  {
     name: 'Alana Maldonado',
     role: 'Patrocinada',
     club: 'Palmeiras',
     image: '/images/alana-maldonado.png',
+  },
+  {
+    name: 'Guilherme Oliveira',
+    role: 'Patrocinado',
+    club: 'Clube Paineiras do Morumby',
+    image: '/images/guilherme-oliveira.png',
   },
   {
     name: 'Marcelo Vicentini',
@@ -40,12 +47,6 @@ const sponsored = [
     role: 'Patrocinado',
     club: 'CT Stanley Torres',
     image: '/images/stanley-torres.png',
-  },
-  {
-    name: 'Rafael Macedo',
-    role: 'Patrocinado',
-    club: 'SOGIPA',
-    image: '/images/rafael-macedo.png',
   },
 ]
 

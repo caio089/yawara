@@ -91,21 +91,45 @@ export function ProductsProvider({ children }) {
       .filter(Boolean)
   }
 
-  const addProduct = async (product, imageFileOrFiles, _existingUrls) => {
+  const imageFieldFromOrderedLocal = (ordered) => {
+    if (!ordered?.length) return ''
+    const urls = ordered.map((x) => (typeof x === 'string' ? x : URL.createObjectURL(x)))
+    return urls.length === 1 ? urls[0] : JSON.stringify(urls)
+  }
+
+  const resolveOrderedImageField = async (ordered) => {
+    if (!ordered?.length) return ''
+    const urls = []
+    for (const item of ordered) {
+      if (typeof item === 'string' && item) urls.push(item)
+      else if (item instanceof File) {
+        const url = await uploadImage(item)
+        if (url) urls.push(url)
+      }
+    }
+    return urls.length === 0 ? '' : urls.length === 1 ? urls[0] : JSON.stringify(urls)
+  }
+
+  const addProduct = async (product, orderedMedia) => {
     if (!configured) {
       const newId = Math.max(...products.map((p) => p.id), 0) + 1
-      setProducts((prev) => [...prev, { ...product, id: newId, available: true }])
+      const imageField = imageFieldFromOrderedLocal(orderedMedia || [])
+      const { image, images } = parseImage(imageField)
+      setProducts((prev) => [
+        ...prev,
+        {
+          ...product,
+          id: newId,
+          available: true,
+          image,
+          images: images.length ? images : image ? [image] : [],
+        },
+      ])
       return
     }
     let imageUrl = product.image
-    if (imageFileOrFiles?.length) {
-      const files = Array.isArray(imageFileOrFiles) ? imageFileOrFiles : [imageFileOrFiles]
-      const urls = []
-      for (const file of files) {
-        const url = await uploadImage(file)
-        if (url) urls.push(url)
-      }
-      imageUrl = urls.length > 1 ? JSON.stringify(urls) : urls[0] || imageUrl
+    if (orderedMedia?.length) {
+      imageUrl = await resolveOrderedImageField(orderedMedia)
     }
     const { name, nameJp, description, price, pixPrice, category, sizes, colors, embroidery, available } = product
     const row = {
@@ -126,9 +150,24 @@ export function ProductsProvider({ children }) {
     if (!error) await fetchProducts()
   }
 
-  const updateProduct = async (id, updates, imageFileOrFiles, existingUrls = []) => {
+  const updateProduct = async (id, updates, orderedMedia) => {
     if (!configured) {
-      setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)))
+      setProducts((prev) =>
+        prev.map((p) => {
+          if (p.id !== id) return p
+          const next = { ...p, ...updates }
+          if (orderedMedia?.length) {
+            const imageField = imageFieldFromOrderedLocal(orderedMedia)
+            const { image, images } = parseImage(imageField)
+            return {
+              ...next,
+              image,
+              images: images.length ? images : image ? [image] : [],
+            }
+          }
+          return next
+        })
+      )
       return
     }
     const row = {
@@ -148,15 +187,8 @@ export function ProductsProvider({ children }) {
     if (updates.pixPrice !== undefined) {
       row.pix_price = updates.pixPrice != null && updates.pixPrice > 0 ? updates.pixPrice : null
     }
-    if (imageFileOrFiles?.length) {
-      const files = Array.isArray(imageFileOrFiles) ? imageFileOrFiles : [imageFileOrFiles]
-      const urls = []
-      for (const file of files) {
-        const url = await uploadImage(file)
-        if (url) urls.push(url)
-      }
-      const allUrls = [...(Array.isArray(existingUrls) ? existingUrls : []), ...urls]
-      row.image = allUrls.length > 1 ? JSON.stringify(allUrls) : allUrls[0] || updates.image
+    if (orderedMedia?.length) {
+      row.image = await resolveOrderedImageField(orderedMedia)
     } else if (updates.image !== undefined) {
       row.image = updates.image
     }

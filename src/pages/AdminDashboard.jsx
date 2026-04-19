@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Package, PackageCheck, Receipt, DollarSign, Plus, Pencil,
   Trash2, Eye, EyeOff, LogOut, X, Save, Search, Upload, Image, Copy,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react'
 import { useAdminAuth } from '../context/AdminAuthContext'
 import { useProducts } from '../context/ProductsContext'
@@ -25,14 +26,23 @@ const JUDOGI_COLORS = ['Azul', 'Branco']
 const JUDOGI_EMBROIDERY = ['Bordado na Lapela e na Calça', 'Bordado no Peito', 'Sem Bordado']
 const FAIXA_EMBROIDERY = ['Sem bordado', 'Com bordado', 'Bordado sombreado']
 
+function buildInitialMediaItems(initial) {
+  if (!initial) return []
+  const imgs = initial.images?.length
+    ? [...initial.images]
+    : initial.image
+      ? [initial.image]
+      : []
+  return imgs.map((url, idx) => ({
+    id: `ex-${idx}-${String(url).slice(-16)}`,
+    type: 'existing',
+    url,
+  }))
+}
+
 function ProductForm({ initial, onSave, onCancel, title }) {
   const fileInputRef = useRef(null)
-  const [imageFiles, setImageFiles] = useState([])
-  const [imagePreviews, setImagePreviews] = useState(() => {
-    if (initial?.images?.length) return [...initial.images]
-    if (initial?.image) return [initial.image]
-    return []
-  })
+  const [mediaItems, setMediaItems] = useState(() => buildInitialMediaItems(initial))
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState(() => ({
     name: initial?.name || '',
@@ -63,7 +73,6 @@ function ProductForm({ initial, onSave, onCancel, title }) {
     const files = e.target.files ? [...e.target.files] : []
     if (!files.length) return
     const newFiles = Array.from(files)
-    setImageFiles((prev) => [...prev, ...newFiles])
     const readers = newFiles.map((file) => {
       return new Promise((resolve) => {
         const r = new FileReader()
@@ -72,18 +81,32 @@ function ProductForm({ initial, onSave, onCancel, title }) {
       })
     })
     Promise.all(readers).then((results) => {
-      setImagePreviews((prev) => [...prev, ...results])
+      const base = Date.now()
+      setMediaItems((prev) => [
+        ...prev,
+        ...newFiles.map((file, i) => ({
+          id: `nw-${base}-${i}`,
+          type: 'new',
+          file,
+          preview: results[i],
+        })),
+      ])
     })
     e.target.value = ''
   }
 
-  const removeImage = (index) => {
-    const existingCount = imagePreviews.length - imageFiles.length
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index))
-    if (index >= existingCount) {
-      const fileIndex = index - existingCount
-      setImageFiles((prev) => prev.filter((_, i) => i !== fileIndex))
-    }
+  const removeMedia = (index) => {
+    setMediaItems((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const moveMedia = (index, delta) => {
+    setMediaItems((prev) => {
+      const next = [...prev]
+      const j = index + delta
+      if (j < 0 || j >= next.length) return prev
+      ;[next[index], next[j]] = [next[j], next[index]]
+      return next
+    })
   }
 
   const handleSubmit = async (e) => {
@@ -93,11 +116,7 @@ function ProductForm({ initial, onSave, onCancel, title }) {
     const sizes = isJudogi ? form.sizes : parseList(form.sizesText)
     const colors = isJudogi ? form.colors : parseList(form.colorsText)
     const embroideryVal = isJudogi ? form.embroidery : (isFaixa ? form.embroidery : undefined)
-    const filesToSend = imageFiles.length > 0 ? imageFiles : null
-    const existingUrls = filesToSend ? imagePreviews.slice(0, imagePreviews.length - filesToSend.length) : []
-    const imageValue = !filesToSend && imagePreviews.length > 0
-      ? (imagePreviews.length === 1 ? imagePreviews[0] : JSON.stringify(imagePreviews))
-      : (initial?.image || '')
+    const orderedMedia = mediaItems.map((m) => (m.type === 'existing' ? m.url : m.file))
     const product = {
       name: form.name,
       nameJp: form.nameJp,
@@ -106,12 +125,11 @@ function ProductForm({ initial, onSave, onCancel, title }) {
       pixPrice: form.pixPrice ? parseFloat(form.pixPrice) : null,
       category: form.category,
       available: form.available,
-      image: imageValue,
       sizes: sizes?.length ? sizes : undefined,
       colors: colors?.length ? colors : undefined,
       embroidery: embroideryVal?.length ? embroideryVal : undefined,
     }
-    await onSave(product, filesToSend, existingUrls)
+    await onSave(product, orderedMedia)
     setSaving(false)
   }
 
@@ -188,26 +206,88 @@ function ProductForm({ initial, onSave, onCancel, title }) {
             <label className="text-xs font-medium text-kuro/50 uppercase tracking-wider block mb-1.5">Imagens do produto *</label>
             <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
             <div
-              onClick={() => fileInputRef.current?.click()}
-              className="min-h-[120px] sm:min-h-0 border-2 border-dashed border-washi-dark rounded-xl p-4 sm:p-6 text-center cursor-pointer hover:border-aka/30 hover:bg-aka/5 transition-all touch-manipulation active:bg-aka/10"
+              onClick={() => {
+                if (mediaItems.length === 0) fileInputRef.current?.click()
+              }}
+              className={`min-h-[120px] sm:min-h-0 border-2 border-dashed border-washi-dark rounded-xl p-4 sm:p-6 text-center transition-all touch-manipulation ${
+                mediaItems.length === 0
+                  ? 'cursor-pointer hover:border-aka/30 hover:bg-aka/5 active:bg-aka/10'
+                  : ''
+              }`}
             >
-              {imagePreviews.length > 0 ? (
-                <div className="space-y-3">
-                  <div className="flex flex-wrap gap-3 justify-center">
-                    {imagePreviews.map((src, i) => (
-                      <div key={i} className="relative group">
-                        <img src={src} alt={`Preview ${i + 1}`} className="w-14 h-14 sm:w-20 sm:h-20 object-cover rounded-lg shrink-0 border border-washi-dark" />
-                        <button type="button" onClick={(e) => { e.stopPropagation(); removeImage(i) }} className="absolute -top-0.5 -right-0.5 w-7 h-7 sm:w-6 sm:h-6 bg-kuro text-shiro rounded-full flex items-center justify-center opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow touch-manipulation" aria-label="Remover imagem">
-                          <X size={14} />
-                        </button>
-                      </div>
-                    ))}
-                    <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-kuro/20 flex flex-col items-center justify-center shrink-0 text-kuro/40 hover:border-aka/40 hover:text-aka/60 transition-colors">
-                      <Plus size={20} />
-                      <span className="text-[10px] mt-0.5">Adicionar</span>
-                    </div>
+              {mediaItems.length > 0 ? (
+                <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
+                  <p className="text-xs text-kuro/55 text-left leading-snug">
+                    <span className="font-medium text-kuro/70">Ordem das fotos:</span>{' '}
+                    toque em <span className="font-semibold text-kuro">Antes</span> ou{' '}
+                    <span className="font-semibold text-kuro">Depois</span> para trocar a posição na fila.
+                    A foto <span className="font-semibold text-aka">1</span> é a capa no site.
+                  </p>
+                  <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
+                    {mediaItems.map((item, i) => {
+                      const src = item.type === 'existing' ? item.url : item.preview
+                      return (
+                        <div
+                          key={item.id}
+                          className="group flex flex-col gap-2 w-[min(100%,9.5rem)] sm:w-36 shrink-0 rounded-xl border border-washi-dark bg-shiro p-2 shadow-sm"
+                        >
+                          <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-washi-dark bg-washi">
+                            <img
+                              src={src}
+                              alt={`Foto ${i + 1}`}
+                              className="h-full w-full object-cover"
+                            />
+                            <span className="absolute bottom-1 left-1 flex h-6 min-w-[1.5rem] items-center justify-center rounded-md bg-kuro/85 px-1.5 text-[11px] font-bold text-shiro shadow">
+                              {i + 1}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => removeMedia(i)}
+                              className="absolute -right-1 -top-1 flex h-9 w-9 items-center justify-center rounded-full bg-kuro text-shiro shadow-md ring-2 ring-shiro touch-manipulation sm:h-8 sm:w-8"
+                              aria-label="Remover imagem"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => moveMedia(i, -1)}
+                              disabled={i === 0}
+                              title="Mover para antes na fila (fica mais à esquerda na ordem)"
+                              className="flex min-h-[48px] flex-1 flex-col items-center justify-center gap-0.5 rounded-xl border-2 border-washi-dark bg-washi px-1 py-1.5 text-kuro transition-all hover:border-kuro/30 hover:bg-kuro/5 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-35 touch-manipulation"
+                              aria-label={`Mover foto ${i + 1} para antes na ordem`}
+                            >
+                              <ChevronLeft size={22} strokeWidth={2.5} className="shrink-0" />
+                              <span className="text-[10px] font-bold uppercase tracking-wide">Antes</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveMedia(i, 1)}
+                              disabled={i === mediaItems.length - 1}
+                              title="Mover para depois na fila (fica mais à direita na ordem)"
+                              className="flex min-h-[48px] flex-1 flex-col items-center justify-center gap-0.5 rounded-xl border-2 border-washi-dark bg-washi px-1 py-1.5 text-kuro transition-all hover:border-kuro/30 hover:bg-kuro/5 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-35 touch-manipulation"
+                              aria-label={`Mover foto ${i + 1} para depois na ordem`}
+                            >
+                              <ChevronRight size={22} strokeWidth={2.5} className="shrink-0" />
+                              <span className="text-[10px] font-bold uppercase tracking-wide">Depois</span>
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex min-h-[11rem] w-[min(100%,9.5rem)] shrink-0 flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-kuro/25 bg-washi/50 p-3 text-kuro/45 transition-colors hover:border-aka/50 hover:bg-aka/5 hover:text-aka touch-manipulation sm:min-h-[12.5rem] sm:w-36"
+                    >
+                      <Plus size={28} strokeWidth={2} />
+                      <span className="text-center text-[11px] font-semibold">Adicionar fotos</span>
+                    </button>
                   </div>
-                  <p className="text-[10px] text-kuro/40">Clique em uma foto para remover (X) ou no quadro “Adicionar” para mais fotos</p>
+                  <p className="text-[10px] text-kuro/40">
+                    Dica: a ordem da fila é da esquerda para a direita (1 → 2 → 3). Depois é só salvar.
+                  </p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-2 py-1 sm:py-2">
@@ -287,7 +367,7 @@ function ProductForm({ initial, onSave, onCancel, title }) {
             </button>
             <button
               type="submit"
-              disabled={saving || imagePreviews.length === 0}
+              disabled={saving || mediaItems.length === 0}
               className="flex-1 min-h-[48px] px-4 sm:px-6 py-3 bg-aka hover:bg-aka-light text-shiro rounded-xl text-sm font-medium transition-colors shadow-lg shadow-aka/20 flex items-center justify-center gap-2 disabled:opacity-50 touch-manipulation"
             >
               <Save size={18} className="sm:w-4 sm:h-4" />
@@ -488,8 +568,8 @@ export default function AdminDashboard() {
           <ProductForm
             title="Adicionar Produto"
             onCancel={() => setShowAddForm(false)}
-            onSave={async (product, file, existingUrls) => {
-              await addProduct(product, file, existingUrls)
+            onSave={async (product, orderedMedia) => {
+              await addProduct(product, orderedMedia)
               setShowAddForm(false)
             }}
           />
@@ -499,8 +579,8 @@ export default function AdminDashboard() {
             title="Editar Produto"
             initial={editingProduct}
             onCancel={() => setEditingProduct(null)}
-            onSave={async (updates, file, existingUrls) => {
-              await updateProduct(editingProduct.id, updates, file, existingUrls)
+            onSave={async (updates, orderedMedia) => {
+              await updateProduct(editingProduct.id, updates, orderedMedia)
               setEditingProduct(null)
             }}
           />
@@ -510,8 +590,8 @@ export default function AdminDashboard() {
             title="Duplicar Produto"
             initial={duplicatingProduct}
             onCancel={() => setDuplicatingProduct(null)}
-            onSave={async (product, file, existingUrls) => {
-              await addProduct(product, file, existingUrls)
+            onSave={async (product, orderedMedia) => {
+              await addProduct(product, orderedMedia)
               setDuplicatingProduct(null)
             }}
           />
