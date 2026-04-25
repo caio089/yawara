@@ -10,7 +10,7 @@ import {
   Package,
 } from 'lucide-react'
 import { useCart } from '../context/CartContext'
-import { getEmbroideryExtra } from '../utils/embroidery'
+import { getEmbroideryExtra, getFaixaCartUnitBasePrice } from '../utils/embroidery'
 
 export default function Cart() {
   const {
@@ -157,7 +157,7 @@ export default function Cart() {
                       )}
                       <div className="mt-2">
                         <p className="text-sm font-bold text-kuro">
-                          R$ {(item.price + getEmbroideryExtra(item.category, item.embroidery, item.name)).toFixed(2)}
+                          R$ {(getFaixaCartUnitBasePrice(item) + getEmbroideryExtra(item.category, item.embroidery, item.name)).toFixed(2)}
                           {getEmbroideryExtra(item.category, item.embroidery, item.name) > 0 && (
                             <span className="text-[10px] font-normal text-kuro/50 ml-1">un.</span>
                           )}
@@ -198,7 +198,7 @@ export default function Cart() {
 
                     <div className="flex items-center gap-3">
                       <p className="text-sm font-bold text-kuro whitespace-nowrap">
-                        R$ {((item.price + getEmbroideryExtra(item.category, item.embroidery, item.name)) * item.quantity).toFixed(2)}
+                        R$ {((getFaixaCartUnitBasePrice(item) + getEmbroideryExtra(item.category, item.embroidery, item.name)) * item.quantity).toFixed(2)}
                       </p>
                       <button
                         type="button"

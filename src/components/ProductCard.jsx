@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ShoppingCart, Check, Eye } from 'lucide-react'
 import { useCart } from '../context/CartContext'
+import { FAIXA_BORDADO_BASE_PRICE, faixaUsesFixedBordadoBase, getFaixaCardDisplayPrice } from '../utils/embroidery'
 
 export default function ProductCard({ product, index }) {
   const navigate = useNavigate()
@@ -10,10 +11,15 @@ export default function ProductCard({ product, index }) {
   const [added, setAdded] = useState(false)
   const [selectedSize] = useState(product.sizes?.[0] || '')
 
+  const displayPrice = getFaixaCardDisplayPrice(product)
+
   const handleAdd = (e) => {
     e.stopPropagation()
     if (!product.available) return
-    addItem(product, selectedSize)
+    const toAdd = faixaUsesFixedBordadoBase(product.category, product.name, product.embroidery)
+      ? { ...product, price: FAIXA_BORDADO_BASE_PRICE }
+      : product
+    addItem(toAdd, selectedSize)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
   }
@@ -80,7 +86,7 @@ export default function ProductCard({ product, index }) {
         <div className="mt-auto pt-3 sm:pt-4 border-t border-washi-dark space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
           <div>
             <span className="text-base sm:text-lg font-bold text-kuro block">
-              R$ {product.price.toFixed(2)}
+              R$ {displayPrice.toFixed(2)}
             </span>
             {product.pixPrice && (
               <span className="text-[10px] text-green-600 font-medium">ou R$ {product.pixPrice.toFixed(2)} no PIX</span>

@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer } from 'react'
-import { getEmbroideryExtra } from '../utils/embroidery'
+import { getEmbroideryExtra, getFaixaCartUnitBasePrice } from '../utils/embroidery'
 
 const CartContext = createContext()
 
@@ -87,7 +87,7 @@ export function CartProvider({ children }) {
 
     state.items.forEach((item, index) => {
       const embroideryExtra = getEmbroideryExtra(item.category, item.embroidery, item.name)
-      const unitPrice = item.price + embroideryExtra
+      const unitPrice = getFaixaCartUnitBasePrice(item) + embroideryExtra
       message += `\n*${index + 1}. ${item.name}*\n`
       if (item.size) message += `   Tamanho: ${item.size}\n`
       if (item.gender) message += `   Gênero: ${item.gender.charAt(0).toUpperCase() + item.gender.slice(1)}\n`

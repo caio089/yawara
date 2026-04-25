@@ -4,11 +4,10 @@ import { motion } from 'framer-motion'
 import { ShoppingCart, Check, ChevronLeft, Package, Ruler, Shield, Truck, Scissors, Palette } from 'lucide-react'
 import { useProducts } from '../context/ProductsContext'
 import { useCart } from '../context/CartContext'
-import { getEmbroideryExtra } from '../utils/embroidery'
+import { getEmbroideryExtra, FAIXA_BORDADO_BASE_PRICE, faixaUsesFixedBordadoBase, isFaixaColoridaProduct } from '../utils/embroidery'
 import ProductCard from '../components/ProductCard'
 
 const FAIXA_PRETA_YAWARA_OPCOES = ['Sem bordado', 'Com bordado', 'Bordado sombreado']
-const FAIXA_PRETA_YAWARA_PRECOS = { 'Sem bordado': 450, 'Com bordado': 550, 'Bordado sombreado': 650 }
 
 const categoryLabels = {
   judogi: 'Judogi',
@@ -34,20 +33,23 @@ export default function ProductDetail() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || '')
   const [selectedColor, setSelectedColor] = useState(product?.colors?.[0] || '')
-  const isFaixaPretaYawara = product && product.category === 'faixas' && (product.name || '').toLowerCase().includes('preta') && (product.name || '').toLowerCase().includes('yawara')
-  const embroideryOpcoes = isFaixaPretaYawara ? FAIXA_PRETA_YAWARA_OPCOES : (product?.embroidery || [])
+  const isFaixaLinhaYawara = product && product.category === 'faixas' && !isFaixaColoridaProduct(product.name) && (product.name || '').toLowerCase().includes('yawara')
+  const usesFixedFaixaBase = product
+    ? faixaUsesFixedBordadoBase(product.category, product.name, product.embroidery)
+    : false
+  const embroideryOpcoes = isFaixaLinhaYawara ? FAIXA_PRETA_YAWARA_OPCOES : (product?.embroidery || [])
   const [selectedEmbroidery, setSelectedEmbroidery] = useState(() => {
     if (!product) return ''
-    const isFPY = product.category === 'faixas' && (product.name || '').toLowerCase().includes('preta') && (product.name || '').toLowerCase().includes('yawara')
-    if (isFPY) return FAIXA_PRETA_YAWARA_OPCOES[0]
+    const isFLY = product.category === 'faixas' && !isFaixaColoridaProduct(product.name) && (product.name || '').toLowerCase().includes('yawara')
+    if (isFLY) return FAIXA_PRETA_YAWARA_OPCOES[0]
     return product.embroidery?.[0] || ''
   })
   const [selectedGender, setSelectedGender] = useState('masculino')
 
   useEffect(() => {
     if (!product) return
-    const isFPY = product.category === 'faixas' && (product.name || '').toLowerCase().includes('preta') && (product.name || '').toLowerCase().includes('yawara')
-    if (isFPY) setSelectedEmbroidery(FAIXA_PRETA_YAWARA_OPCOES[0])
+    const isFLY = product.category === 'faixas' && !isFaixaColoridaProduct(product.name) && (product.name || '').toLowerCase().includes('yawara')
+    if (isFLY) setSelectedEmbroidery(FAIXA_PRETA_YAWARA_OPCOES[0])
     else setSelectedEmbroidery(product.embroidery?.[0] || '')
   }, [product?.id])
 
@@ -73,15 +75,16 @@ export default function ProductDetail() {
   const showGenderOption = (product.category === 'sobretudo' || product.category === 'conjunto') &&
     !(product.name.toLowerCase().includes('sauna') && product.name.toLowerCase().includes('mizuno'))
   const embroideryExtra = getEmbroideryExtra(product.category, selectedEmbroidery, product.name)
-  const finalPrice = isFaixaPretaYawara && FAIXA_PRETA_YAWARA_PRECOS[selectedEmbroidery] != null
-    ? FAIXA_PRETA_YAWARA_PRECOS[selectedEmbroidery]
+  const finalPrice = usesFixedFaixaBase
+    ? FAIXA_BORDADO_BASE_PRICE + embroideryExtra
     : product.price + embroideryExtra
+  const priceBreakdownBase = usesFixedFaixaBase ? FAIXA_BORDADO_BASE_PRICE : product.price
 
   const handleAdd = () => {
     if (!product.available) return
     const embroidery = (product.category === 'judogi' || product.category === 'faixas') ? selectedEmbroidery : undefined
     const gender = showGenderOption ? selectedGender : undefined
-    const productToAdd = isFaixaPretaYawara ? { ...product, price: 450 } : product
+    const productToAdd = usesFixedFaixaBase ? { ...product, price: FAIXA_BORDADO_BASE_PRICE } : product
     addItem(productToAdd, selectedSize, embroidery, gender)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
@@ -265,10 +268,10 @@ export default function ProductDetail() {
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   {embroideryOpcoes.map((opt) => {
-                    const priceForOpt = isFaixaPretaYawara && FAIXA_PRETA_YAWARA_PRECOS[opt] != null
-                      ? FAIXA_PRETA_YAWARA_PRECOS[opt]
+                    const priceForOpt = usesFixedFaixaBase
+                      ? FAIXA_BORDADO_BASE_PRICE + getEmbroideryExtra(product.category, opt, product.name)
                       : (product.category === 'faixas' ? product.price + getEmbroideryExtra(product.category, opt, product.name) : null)
-                    const showPrice = isFaixaPretaYawara || (product.category === 'faixas' && getEmbroideryExtra(product.category, opt, product.name) > 0)
+                    const showPrice = usesFixedFaixaBase || (product.category === 'faixas' && getEmbroideryExtra(product.category, opt, product.name) > 0)
                     return (
                       <button
                         key={opt}
@@ -296,7 +299,7 @@ export default function ProductDetail() {
                 </span>
                 {((product.category === 'judogi' || product.category === 'faixas') && selectedEmbroidery && embroideryExtra > 0) && (
                   <p className="text-xs text-kuro/50 mt-1">
-                    (base R$ {product.price.toFixed(2)} + bordado R$ {embroideryExtra.toFixed(2)})
+                    (base R$ {priceBreakdownBase.toFixed(2)} + bordado R$ {embroideryExtra.toFixed(2)})
                   </p>
                 )}
               </div>
