@@ -5,6 +5,17 @@
  */
 export const FAIXA_BORDADO_BASE_PRICE = 450
 
+function asPositiveNumber(value) {
+  const n = Number(value)
+  return Number.isFinite(n) && n > 0 ? n : null
+}
+
+/** Permite sobrescrever a base fixa de faixas via `price` do produto (admin). */
+export function getFaixaBordadoBasePrice(productOrItem) {
+  const override = asPositiveNumber(productOrItem?.price)
+  return override ?? FAIXA_BORDADO_BASE_PRICE
+}
+
 export function isFaixaColoridaProduct(productName = '') {
   return productName.toLowerCase().includes('colorida')
 }
@@ -21,7 +32,7 @@ export function faixaUsesFixedBordadoBase(category, productName, embroideryList)
 export function getFaixaCardDisplayPrice(product) {
   if (!product) return 0
   if (faixaUsesFixedBordadoBase(product.category, product.name, product.embroidery)) {
-    return FAIXA_BORDADO_BASE_PRICE
+    return getFaixaBordadoBasePrice(product)
   }
   return product.price
 }
@@ -30,8 +41,8 @@ export function getFaixaCardDisplayPrice(product) {
 export function getFaixaCartUnitBasePrice(item) {
   if (item.category !== 'faixas' || isFaixaColoridaProduct(item.name)) return item.price
   const list = Array.isArray(item.embroidery) ? item.embroidery : []
-  if (faixaUsesFixedBordadoBase(item.category, item.name, list)) return FAIXA_BORDADO_BASE_PRICE
-  if (typeof item.embroidery === 'string' && item.embroidery.length > 0) return FAIXA_BORDADO_BASE_PRICE
+  if (faixaUsesFixedBordadoBase(item.category, item.name, list)) return getFaixaBordadoBasePrice(item)
+  if (typeof item.embroidery === 'string' && item.embroidery.length > 0) return getFaixaBordadoBasePrice(item)
   return item.price
 }
 export const JUDOGI_EMBROIDERY_EXTRA = {

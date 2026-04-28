@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { ShoppingCart, Check, ChevronLeft, Package, Ruler, Shield, Truck, Scissors, Palette } from 'lucide-react'
 import { useProducts } from '../context/ProductsContext'
 import { useCart } from '../context/CartContext'
-import { getEmbroideryExtra, FAIXA_BORDADO_BASE_PRICE, faixaUsesFixedBordadoBase, isFaixaColoridaProduct } from '../utils/embroidery'
+import { getEmbroideryExtra, faixaUsesFixedBordadoBase, getFaixaBordadoBasePrice, isFaixaColoridaProduct } from '../utils/embroidery'
 import ProductCard from '../components/ProductCard'
 
 const FAIXA_PRETA_YAWARA_OPCOES = ['Sem bordado', 'Com bordado', 'Bordado sombreado']
@@ -75,16 +75,17 @@ export default function ProductDetail() {
   const showGenderOption = (product.category === 'sobretudo' || product.category === 'conjunto') &&
     !(product.name.toLowerCase().includes('sauna') && product.name.toLowerCase().includes('mizuno'))
   const embroideryExtra = getEmbroideryExtra(product.category, selectedEmbroidery, product.name)
+  const faixaBasePrice = usesFixedFaixaBase ? getFaixaBordadoBasePrice(product) : product.price
   const finalPrice = usesFixedFaixaBase
-    ? FAIXA_BORDADO_BASE_PRICE + embroideryExtra
+    ? faixaBasePrice + embroideryExtra
     : product.price + embroideryExtra
-  const priceBreakdownBase = usesFixedFaixaBase ? FAIXA_BORDADO_BASE_PRICE : product.price
+  const priceBreakdownBase = usesFixedFaixaBase ? faixaBasePrice : product.price
 
   const handleAdd = () => {
     if (!product.available) return
     const embroidery = (product.category === 'judogi' || product.category === 'faixas') ? selectedEmbroidery : undefined
     const gender = showGenderOption ? selectedGender : undefined
-    const productToAdd = usesFixedFaixaBase ? { ...product, price: FAIXA_BORDADO_BASE_PRICE } : product
+    const productToAdd = usesFixedFaixaBase ? { ...product, price: faixaBasePrice } : product
     addItem(productToAdd, selectedSize, embroidery, gender)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
@@ -269,7 +270,7 @@ export default function ProductDetail() {
                 <div className="flex gap-2 flex-wrap">
                   {embroideryOpcoes.map((opt) => {
                     const priceForOpt = usesFixedFaixaBase
-                      ? FAIXA_BORDADO_BASE_PRICE + getEmbroideryExtra(product.category, opt, product.name)
+                      ? faixaBasePrice + getEmbroideryExtra(product.category, opt, product.name)
                       : (product.category === 'faixas' ? product.price + getEmbroideryExtra(product.category, opt, product.name) : null)
                     const showPrice = usesFixedFaixaBase || (product.category === 'faixas' && getEmbroideryExtra(product.category, opt, product.name) > 0)
                     return (
