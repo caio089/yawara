@@ -129,4 +129,5 @@ export const categories = [
   { id: 'conjunto', name: 'Conjuntos', nameJp: 'セット' },
   { id: 'caneca', name: 'Canecas', nameJp: 'マグカップ' },
   { id: 'livros', name: 'Livros', nameJp: '本' },
+  { id: 'diversos', name: 'Diversos', nameJp: 'その他' },
 ]

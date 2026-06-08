@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ShoppingCart, Check, Eye } from 'lucide-react'
 import { useCart } from '../context/CartContext'
-import { FAIXA_BORDADO_BASE_PRICE, faixaUsesFixedBordadoBase, getFaixaCardDisplayPrice } from '../utils/embroidery'
+import { faixaUsesFixedBordadoBase, getFaixaBordadoBasePrice, getFaixaCardDisplayPrice } from '../utils/embroidery'
+import { shouldShowGenderOption } from '../utils/productOptions'
 
 export default function ProductCard({ product, index }) {
   const navigate = useNavigate()
@@ -16,9 +17,17 @@ export default function ProductCard({ product, index }) {
   const handleAdd = (e) => {
     e.stopPropagation()
     if (!product.available) return
-    const toAdd = faixaUsesFixedBordadoBase(product.category, product.name, product.embroidery)
-      ? { ...product, price: FAIXA_BORDADO_BASE_PRICE }
-      : product
+    if (shouldShowGenderOption(product)) {
+      navigate(`/produto/${product.id}`)
+      return
+    }
+    const toAdd = {
+      ...product,
+      embroideryOptions: product.embroidery,
+      price: faixaUsesFixedBordadoBase(product.category, product.name, product.embroidery)
+        ? getFaixaBordadoBasePrice(product)
+        : product.price,
+    }
     addItem(toAdd, selectedSize)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)

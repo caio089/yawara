@@ -8,6 +8,8 @@ import {
 } from 'lucide-react'
 import { useAdminAuth } from '../context/AdminAuthContext'
 import { useProducts } from '../context/ProductsContext'
+import { getDefaultEmbroideryPrice, FAIXA_EMBROIDERY_OPTIONS } from '../utils/embroidery'
+import { isGenderCategory, GENDER_OPTIONS, genderLabel } from '../utils/productOptions'
 
 const categoryOptions = [
   { value: 'judogi', label: 'Judogi' },
@@ -19,12 +21,44 @@ const categoryOptions = [
   { value: 'conjunto', label: 'Conjunto' },
   { value: 'caneca', label: 'Caneca' },
   { value: 'livros', label: 'Livros' },
+  { value: 'diversos', label: 'Diversos' },
 ]
 
 const JUDOGI_SIZES = ['1,50', '1,55', '1,60', '1,65', '1,70', '1,75', '1,80', 'Enviar medidas via WhatsApp']
 const JUDOGI_COLORS = ['Azul', 'Branco']
 const JUDOGI_EMBROIDERY = ['Bordado na Lapela e na Calça', 'Bordado no Peito', 'Sem Bordado']
-const FAIXA_EMBROIDERY = ['Sem bordado', 'Com bordado', 'Bordado sombreado']
+function defaultFaixaEmbroideryState() {
+  const embroidery = [...FAIXA_EMBROIDERY_OPTIONS]
+  const embroideryPrices = {}
+  embroidery.forEach((opt) => {
+    embroideryPrices[opt] = String(getDefaultEmbroideryPrice('faixas', opt))
+  })
+  return { embroidery, embroideryPrices }
+}
+
+function buildInitialEmbroideryState(initial) {
+  const category = initial?.category || 'judogi'
+  const savedEmbroidery = Array.isArray(initial?.embroidery) ? initial.embroidery : []
+  const savedPrices = initial?.embroideryPrices ?? initial?.embroidery_prices
+
+  if (savedEmbroidery.length > 0) {
+    const embroideryPrices = {}
+    savedEmbroidery.forEach((opt) => {
+      if (savedPrices && typeof savedPrices === 'object' && opt in savedPrices) {
+        embroideryPrices[opt] = String(savedPrices[opt])
+      } else {
+        embroideryPrices[opt] = String(getDefaultEmbroideryPrice(category, opt))
+      }
+    })
+    return { embroidery: savedEmbroidery, embroideryPrices }
+  }
+
+  if (category === 'faixas') {
+    return defaultFaixaEmbroideryState()
+  }
+
+  return { embroidery: [], embroideryPrices: {} }
+}
 
 function buildInitialMediaItems(initial) {
   if (!initial) return []
@@ -44,29 +78,59 @@ function ProductForm({ initial, onSave, onCancel, title }) {
   const fileInputRef = useRef(null)
   const [mediaItems, setMediaItems] = useState(() => buildInitialMediaItems(initial))
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState(() => ({
-    name: initial?.name || '',
-    nameJp: initial?.nameJp || initial?.name_jp || '',
-    description: initial?.description || '',
-    price: initial?.price?.toString() || '',
-    pixPrice: initial?.pixPrice != null ? String(initial.pixPrice) : (initial?.pix_price != null ? String(initial.pix_price) : ''),
-    category: initial?.category || 'judogi',
-    available: initial?.available !== false,
-    sizes: Array.isArray(initial?.sizes) ? initial.sizes : [],
-    colors: Array.isArray(initial?.colors) ? initial.colors : [],
-    embroidery: Array.isArray(initial?.embroidery) ? initial.embroidery : [],
-    sizesText: Array.isArray(initial?.sizes) ? initial.sizes.join(', ') : '',
-    colorsText: Array.isArray(initial?.colors) ? initial.colors.join(', ') : '',
-  }))
+  const [saveError, setSaveError] = useState('')
+  const [form, setForm] = useState(() => {
+    const category = initial?.category || 'judogi'
+    const embroideryState = buildInitialEmbroideryState(initial)
+    return {
+      name: initial?.name || '',
+      nameJp: initial?.nameJp || initial?.name_jp || '',
+      description: initial?.description || '',
+      price: initial?.price?.toString() || '',
+      pixPrice: initial?.pixPrice != null ? String(initial.pixPrice) : (initial?.pix_price != null ? String(initial.pix_price) : ''),
+      category,
+      available: initial?.available !== false,
+      sizes: Array.isArray(initial?.sizes) ? initial.sizes : [],
+      colors: Array.isArray(initial?.colors) ? initial.colors : [],
+      embroidery: embroideryState.embroidery,
+      embroideryPrices: embroideryState.embroideryPrices,
+      sizesText: Array.isArray(initial?.sizes) ? initial.sizes.join(', ') : '',
+      colorsText: Array.isArray(initial?.colors) ? initial.colors.join(', ') : '',
+    }
+  })
 
   const isJudogi = form.category === 'judogi'
   const isFaixa = form.category === 'faixas'
+  const isGenderProduct = isGenderCategory(form.category)
 
   const toggleArrayItem = (key, item) => {
     setForm((prev) => {
       const arr = prev[key]
       return { ...prev, [key]: arr.includes(item) ? arr.filter((v) => v !== item) : [...arr, item] }
     })
+  }
+
+  const toggleEmbroideryOption = (opt) => {
+    setForm((prev) => {
+      const isSelected = prev.embroidery.includes(opt)
+      const embroidery = isSelected
+        ? prev.embroidery.filter((v) => v !== opt)
+        : [...prev.embroidery, opt]
+      const embroideryPrices = { ...prev.embroideryPrices }
+      if (isSelected) {
+        delete embroideryPrices[opt]
+      } else {
+        embroideryPrices[opt] = String(getDefaultEmbroideryPrice(prev.category, opt))
+      }
+      return { ...prev, embroidery, embroideryPrices }
+    })
+  }
+
+  const setEmbroideryPrice = (opt, value) => {
+    setForm((prev) => ({
+      ...prev,
+      embroideryPrices: { ...prev.embroideryPrices, [opt]: value },
+    }))
   }
 
   const handleImageSelect = (e) => {
@@ -112,10 +176,17 @@ function ProductForm({ initial, onSave, onCancel, title }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
+    setSaveError('')
     const parseList = (text) => (text || '').split(',').map((s) => s.trim()).filter(Boolean)
     const sizes = isJudogi ? form.sizes : parseList(form.sizesText)
     const colors = isJudogi ? form.colors : parseList(form.colorsText)
     const embroideryVal = isJudogi ? form.embroidery : (isFaixa ? form.embroidery : undefined)
+    const embroideryPrices = {}
+    if (embroideryVal?.length) {
+      embroideryVal.forEach((opt) => {
+        embroideryPrices[opt] = parseFloat(form.embroideryPrices[opt]) || 0
+      })
+    }
     const orderedMedia = mediaItems.map((m) => (m.type === 'existing' ? m.url : m.file))
     const product = {
       name: form.name,
@@ -128,9 +199,21 @@ function ProductForm({ initial, onSave, onCancel, title }) {
       sizes: sizes?.length ? sizes : undefined,
       colors: colors?.length ? colors : undefined,
       embroidery: embroideryVal?.length ? embroideryVal : undefined,
+      embroideryPrices: Object.keys(embroideryPrices).length ? embroideryPrices : undefined,
+      genderOptions: isGenderProduct ? [...GENDER_OPTIONS] : undefined,
     }
-    await onSave(product, orderedMedia)
-    setSaving(false)
+    try {
+      const result = await onSave(product, orderedMedia)
+      if (result?.success === false) {
+        setSaveError(result.error || 'Não foi possível salvar o produto.')
+        return
+      }
+    } catch (err) {
+      setSaveError(err?.message || 'Não foi possível salvar o produto.')
+      return
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -158,6 +241,11 @@ function ProductForm({ initial, onSave, onCancel, title }) {
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-4 pb-28 sm:pb-6">
+          {saveError && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 leading-relaxed">
+              {saveError}
+            </div>
+          )}
           <Field label="Nome *" value={form.name} onChange={(v) => setForm({ ...form, name: v })} placeholder="Ex: Judogi Elite" required />
 
           <div>
@@ -178,7 +266,19 @@ function ProductForm({ initial, onSave, onCancel, title }) {
               <label className="text-xs font-medium text-kuro/50 uppercase tracking-wider block mb-1.5">Categoria</label>
               <select
                 value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                onChange={(e) => {
+                  const category = e.target.value
+                  setForm((prev) => {
+                    const next = { ...prev, category }
+                    if (category === 'faixas' && prev.embroidery.length === 0) {
+                      return { ...next, ...defaultFaixaEmbroideryState() }
+                    }
+                    if (category !== 'faixas' && category !== 'judogi') {
+                      return { ...next, embroidery: [], embroideryPrices: {} }
+                    }
+                    return next
+                  })
+                }}
                 className="w-full min-h-[48px] px-4 py-3 bg-shiro border border-washi-dark rounded-xl text-base sm:text-sm focus:outline-none focus:border-aka/30 cursor-pointer touch-manipulation"
               >
                 {categoryOptions.map((c) => (
@@ -329,12 +429,19 @@ function ProductForm({ initial, onSave, onCancel, title }) {
                 <label className="text-xs font-medium text-kuro/50 uppercase tracking-wider block mb-2">Opções de Bordado</label>
                 <div className="flex flex-wrap gap-2">
                   {JUDOGI_EMBROIDERY.map((opt) => (
-                    <button key={opt} type="button" onClick={() => toggleArrayItem('embroidery', opt)}
+                    <button key={opt} type="button" onClick={() => toggleEmbroideryOption(opt)}
                       className={`min-h-[44px] px-3 py-2.5 rounded-lg text-xs font-medium transition-all touch-manipulation ${
                         form.embroidery.includes(opt) ? 'bg-aka text-shiro shadow-md' : 'bg-shiro text-kuro/60 border border-washi-dark hover:bg-kuro/5'
                       }`}>{opt}</button>
                   ))}
                 </div>
+                <EmbroideryPricesEditor
+                  options={form.embroidery}
+                  prices={form.embroideryPrices}
+                  basePrice={form.price}
+                  onChange={setEmbroideryPrice}
+                  hint="Preço base do judogi no campo acima. Defina o acréscimo de cada bordado abaixo."
+                />
               </div>
             </>
           ) : isFaixa ? (
@@ -344,19 +451,47 @@ function ProductForm({ initial, onSave, onCancel, title }) {
               <div>
                 <label className="text-xs font-medium text-kuro/50 uppercase tracking-wider block mb-2">Bordado</label>
                 <div className="flex flex-wrap gap-2">
-                  {FAIXA_EMBROIDERY.map((opt) => (
-                    <button key={opt} type="button" onClick={() => toggleArrayItem('embroidery', opt)}
+                  {FAIXA_EMBROIDERY_OPTIONS.map((opt) => (
+                    <button key={opt} type="button" onClick={() => toggleEmbroideryOption(opt)}
                       className={`min-h-[44px] px-3 py-2.5 rounded-lg text-xs font-medium transition-all touch-manipulation ${
                         form.embroidery.includes(opt) ? 'bg-aka text-shiro shadow-md' : 'bg-shiro text-kuro/60 border border-washi-dark hover:bg-kuro/5'
                       }`}>{opt}</button>
                   ))}
                 </div>
+                <EmbroideryPricesEditor
+                  options={form.embroidery}
+                  prices={form.embroideryPrices}
+                  basePrice={form.price}
+                  onChange={setEmbroideryPrice}
+                  hint="Preço base da faixa (sem bordado) no campo Preço acima. Defina o acréscimo de cada opção abaixo."
+                />
               </div>
             </>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Tamanhos (vírgula)" value={form.sizesText} onChange={(v) => setForm({ ...form, sizesText: v })} placeholder="P, M, G, GG" />
               <Field label="Cores (vírgula)" value={form.colorsText} onChange={(v) => setForm({ ...form, colorsText: v })} placeholder="Branca, Azul" />
+            </div>
+          )}
+
+          {isGenderProduct && (
+            <div>
+              <label className="text-xs font-medium text-kuro/50 uppercase tracking-wider block mb-2">
+                Gêneros no site
+              </label>
+              <p className="text-xs text-kuro/45 mb-3 leading-relaxed">
+                O cliente escolhe uma opção na página do produto antes de adicionar ao carrinho.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {GENDER_OPTIONS.map((opt) => (
+                  <span
+                    key={opt}
+                    className="min-h-[44px] inline-flex items-center px-4 py-2.5 rounded-lg text-xs font-medium bg-kuro text-shiro shadow-md"
+                  >
+                    {genderLabel(opt)}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
           </div>
@@ -377,6 +512,38 @@ function ProductForm({ initial, onSave, onCancel, title }) {
         </form>
       </motion.div>
     </motion.div>
+  )
+}
+
+function EmbroideryPricesEditor({ options, prices, basePrice, onChange, hint }) {
+  if (!options?.length) return null
+  const base = parseFloat(basePrice) || 0
+  return (
+    <div className="mt-3 space-y-3 rounded-xl border border-washi-dark bg-washi/40 p-4">
+      <p className="text-xs leading-relaxed text-kuro/55">{hint}</p>
+      {options.map((opt) => {
+        const extra = parseFloat(prices[opt]) || 0
+        return (
+          <div key={opt} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <span className="flex-1 text-sm font-medium text-kuro">{opt}</span>
+            <div className="flex items-center gap-2 sm:w-44">
+              <span className="shrink-0 text-xs text-kuro/45">+ R$</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={prices[opt] ?? '0'}
+                onChange={(e) => onChange(opt, e.target.value)}
+                className="w-full min-h-[44px] rounded-lg border border-washi-dark bg-shiro px-3 py-2 text-sm focus:border-aka/30 focus:outline-none focus:ring-2 focus:ring-aka/10 touch-manipulation"
+              />
+            </div>
+            <span className="text-xs text-kuro/45 sm:w-28 sm:text-right">
+              Total: R$ {(base + extra).toFixed(2)}
+            </span>
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
@@ -569,8 +736,10 @@ export default function AdminDashboard() {
             title="Adicionar Produto"
             onCancel={() => setShowAddForm(false)}
             onSave={async (product, orderedMedia) => {
-              await addProduct(product, orderedMedia)
+              const result = await addProduct(product, orderedMedia)
+              if (result?.success === false) return result
               setShowAddForm(false)
+              return { success: true }
             }}
           />
         )}
@@ -580,8 +749,10 @@ export default function AdminDashboard() {
             initial={editingProduct}
             onCancel={() => setEditingProduct(null)}
             onSave={async (updates, orderedMedia) => {
-              await updateProduct(editingProduct.id, updates, orderedMedia)
+              const result = await updateProduct(editingProduct.id, updates, orderedMedia)
+              if (result?.success === false) return result
               setEditingProduct(null)
+              return { success: true }
             }}
           />
         )}
@@ -591,8 +762,10 @@ export default function AdminDashboard() {
             initial={duplicatingProduct}
             onCancel={() => setDuplicatingProduct(null)}
             onSave={async (product, orderedMedia) => {
-              await addProduct(product, orderedMedia)
+              const result = await addProduct(product, orderedMedia)
+              if (result?.success === false) return result
               setDuplicatingProduct(null)
+              return { success: true }
             }}
           />
         )}

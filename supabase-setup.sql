@@ -132,3 +132,5 @@ INSERT INTO products (name, name_jp, description, price, category, image, badge,
 
 ALTER TABLE products ADD COLUMN IF NOT EXISTS embroidery TEXT[];
 ALTER TABLE products ADD COLUMN IF NOT EXISTS pix_price NUMERIC(10,2) DEFAULT NULL;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS embroidery_prices JSONB DEFAULT NULL;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS gender_options TEXT[];

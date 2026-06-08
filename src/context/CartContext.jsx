@@ -1,5 +1,6 @@
 import { createContext, useContext, useReducer } from 'react'
-import { getEmbroideryExtra, getFaixaCartUnitBasePrice } from '../utils/embroidery'
+import { getEmbroideryExtra, getCartUnitPrice } from '../utils/embroidery'
+import { genderLabel } from '../utils/productOptions'
 
 const CartContext = createContext()
 
@@ -58,7 +59,18 @@ export function CartProvider({ children }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] })
 
   const addItem = (product, size = '', embroidery = '', gender = '') => {
-    dispatch({ type: 'ADD_ITEM', payload: { ...product, size, embroidery: embroidery || undefined, gender: gender || undefined } })
+    const embroideryOptions = product.embroideryOptions
+      ?? (Array.isArray(product.embroidery) ? product.embroidery : undefined)
+    dispatch({
+      type: 'ADD_ITEM',
+      payload: {
+        ...product,
+        embroideryOptions,
+        size,
+        embroidery: embroidery || undefined,
+        gender: gender || undefined,
+      },
+    })
   }
 
   const removeItem = (id, size = '', embroidery = '', gender = '') => {
@@ -74,10 +86,7 @@ export function CartProvider({ children }) {
   }
 
   const totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0)
-  const totalPrice = state.items.reduce((sum, item) => {
-    const unitPrice = item.price + getEmbroideryExtra(item.category, item.embroidery, item.name)
-    return sum + unitPrice * item.quantity
-  }, 0)
+  const totalPrice = state.items.reduce((sum, item) => sum + getCartUnitPrice(item) * item.quantity, 0)
 
   const sendToWhatsApp = () => {
     const hour = new Date().getHours()
@@ -86,11 +95,11 @@ export function CartProvider({ children }) {
     message += '━━━━━━━━━━━━━━━━━━━━\n'
 
     state.items.forEach((item, index) => {
-      const embroideryExtra = getEmbroideryExtra(item.category, item.embroidery, item.name)
-      const unitPrice = getFaixaCartUnitBasePrice(item) + embroideryExtra
+      const embroideryExtra = getEmbroideryExtra(item.category, item.embroidery, item.name, item)
+      const unitPrice = getCartUnitPrice(item)
       message += `\n*${index + 1}. ${item.name}*\n`
       if (item.size) message += `   Tamanho: ${item.size}\n`
-      if (item.gender) message += `   Gênero: ${item.gender.charAt(0).toUpperCase() + item.gender.slice(1)}\n`
+      if (item.gender) message += `   Gênero: ${genderLabel(item.gender)}\n`
       if (item.embroidery) message += `   Bordado: ${item.embroidery}${embroideryExtra > 0 ? ` (+R$ ${embroideryExtra.toFixed(2)})` : ''}\n`
       message += `   Qtd: ${item.quantity} × R$ ${unitPrice.toFixed(2)}\n`
       message += `   Subtotal: R$ ${(unitPrice * item.quantity).toFixed(2)}\n`

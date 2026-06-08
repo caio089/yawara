@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "node node_modules/vite/bin/vite.js",
     "build": "node node_modules/vite/bin/vite.js build",
-    "preview": "node node_modules/vite/bin/vite.js preview"
+    "preview": "node node_modules/vite/bin/vite.js preview",
+    "audit:supabase": "node scripts/audit-supabase.mjs",
+    "backfill:embroidery": "node scripts/backfill-embroidery-prices.mjs",
+    "backfill:embroidery:dry": "node scripts/backfill-embroidery-prices.mjs --dry-run",
+    "cleanup:storage": "node scripts/cleanup-orphan-storage.mjs"
   },
   "repository": {
     "type": "git",

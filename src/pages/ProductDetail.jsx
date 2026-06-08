@@ -4,10 +4,9 @@ import { motion } from 'framer-motion'
 import { ShoppingCart, Check, ChevronLeft, Package, Ruler, Shield, Truck, Scissors, Palette } from 'lucide-react'
 import { useProducts } from '../context/ProductsContext'
 import { useCart } from '../context/CartContext'
-import { getEmbroideryExtra, faixaUsesFixedBordadoBase, getFaixaBordadoBasePrice, isFaixaColoridaProduct } from '../utils/embroidery'
+import { getEmbroideryExtra, faixaUsesFixedBordadoBase, getFaixaBordadoBasePrice } from '../utils/embroidery'
+import { shouldShowGenderOption, getGenderOptionsForProduct, genderLabel } from '../utils/productOptions'
 import ProductCard from '../components/ProductCard'
-
-const FAIXA_PRETA_YAWARA_OPCOES = ['Sem bordado', 'Com bordado', 'Bordado sombreado']
 
 const categoryLabels = {
   judogi: 'Judogi',
@@ -19,6 +18,7 @@ const categoryLabels = {
   conjunto: 'Conjunto',
   caneca: 'Caneca',
   livros: 'Livro',
+  diversos: 'Diversos',
 }
 
 export default function ProductDetail() {
@@ -33,24 +33,18 @@ export default function ProductDetail() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || '')
   const [selectedColor, setSelectedColor] = useState(product?.colors?.[0] || '')
-  const isFaixaLinhaYawara = product && product.category === 'faixas' && !isFaixaColoridaProduct(product.name) && (product.name || '').toLowerCase().includes('yawara')
   const usesFixedFaixaBase = product
     ? faixaUsesFixedBordadoBase(product.category, product.name, product.embroidery)
     : false
-  const embroideryOpcoes = isFaixaLinhaYawara ? FAIXA_PRETA_YAWARA_OPCOES : (product?.embroidery || [])
-  const [selectedEmbroidery, setSelectedEmbroidery] = useState(() => {
-    if (!product) return ''
-    const isFLY = product.category === 'faixas' && !isFaixaColoridaProduct(product.name) && (product.name || '').toLowerCase().includes('yawara')
-    if (isFLY) return FAIXA_PRETA_YAWARA_OPCOES[0]
-    return product.embroidery?.[0] || ''
-  })
+  const embroideryOpcoes = product?.embroidery?.length ? product.embroidery : []
+  const [selectedEmbroidery, setSelectedEmbroidery] = useState(() => product?.embroidery?.[0] || '')
   const [selectedGender, setSelectedGender] = useState('masculino')
 
   useEffect(() => {
     if (!product) return
-    const isFLY = product.category === 'faixas' && !isFaixaColoridaProduct(product.name) && (product.name || '').toLowerCase().includes('yawara')
-    if (isFLY) setSelectedEmbroidery(FAIXA_PRETA_YAWARA_OPCOES[0])
-    else setSelectedEmbroidery(product.embroidery?.[0] || '')
+    setSelectedEmbroidery(product.embroidery?.[0] || '')
+    const genders = getGenderOptionsForProduct(product)
+    setSelectedGender(genders[0] || 'masculino')
   }, [product?.id])
 
   const related = useMemo(() => {
@@ -72,9 +66,9 @@ export default function ProductDetail() {
     )
   }
 
-  const showGenderOption = (product.category === 'sobretudo' || product.category === 'conjunto') &&
-    !(product.name.toLowerCase().includes('sauna') && product.name.toLowerCase().includes('mizuno'))
-  const embroideryExtra = getEmbroideryExtra(product.category, selectedEmbroidery, product.name)
+  const showGenderOption = shouldShowGenderOption(product)
+  const genderOptions = getGenderOptionsForProduct(product)
+  const embroideryExtra = getEmbroideryExtra(product.category, selectedEmbroidery, product.name, product)
   const faixaBasePrice = usesFixedFaixaBase ? getFaixaBordadoBasePrice(product) : product.price
   const finalPrice = usesFixedFaixaBase
     ? faixaBasePrice + embroideryExtra
@@ -85,7 +79,11 @@ export default function ProductDetail() {
     if (!product.available) return
     const embroidery = (product.category === 'judogi' || product.category === 'faixas') ? selectedEmbroidery : undefined
     const gender = showGenderOption ? selectedGender : undefined
-    const productToAdd = usesFixedFaixaBase ? { ...product, price: faixaBasePrice } : product
+    const productToAdd = {
+      ...product,
+      embroideryOptions: product.embroidery,
+      price: usesFixedFaixaBase ? faixaBasePrice : product.price,
+    }
     addItem(productToAdd, selectedSize, embroidery, gender)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
@@ -244,7 +242,7 @@ export default function ProductDetail() {
                   Gênero
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  {['masculino', 'feminino'].map((opt) => (
+                  {genderOptions.map((opt) => (
                     <button
                       key={opt}
                       type="button"
@@ -255,7 +253,7 @@ export default function ProductDetail() {
                           : 'bg-washi text-kuro/60 hover:bg-kuro/10 border border-washi-dark'
                       }`}
                     >
-                      {opt}
+                      {genderLabel(opt)}
                     </button>
                   ))}
                 </div>
@@ -269,10 +267,11 @@ export default function ProductDetail() {
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   {embroideryOpcoes.map((opt) => {
+                    const optExtra = getEmbroideryExtra(product.category, opt, product.name, product)
                     const priceForOpt = usesFixedFaixaBase
-                      ? faixaBasePrice + getEmbroideryExtra(product.category, opt, product.name)
-                      : (product.category === 'faixas' ? product.price + getEmbroideryExtra(product.category, opt, product.name) : null)
-                    const showPrice = usesFixedFaixaBase || (product.category === 'faixas' && getEmbroideryExtra(product.category, opt, product.name) > 0)
+                      ? faixaBasePrice + optExtra
+                      : (product.category === 'faixas' ? product.price + optExtra : null)
+                    const showPrice = product.category === 'faixas' || usesFixedFaixaBase
                     return (
                       <button
                         key={opt}
