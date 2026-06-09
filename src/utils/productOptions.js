@@ -9,18 +9,37 @@ export function isGenderCategory(category) {
   return value === 'conjunto' || value === 'sobretudo'
 }
 
-export function shouldShowGenderOption(product) {
-  if (!product || !isGenderCategory(product.category)) return false
-  const name = (product.name || '').toLowerCase()
-  if (name.includes('sauna') && name.includes('mizuno')) return false
-  return true
+export function isSaunaMizunoProduct(product) {
+  const name = (product?.name || '').toLowerCase()
+  return name.includes('sauna') && name.includes('mizuno')
+}
+
+/** Opções salvas no admin para o formulário de edição */
+export function getInitialGenderOptionsForAdmin(product) {
+  if (!product || !isGenderCategory(product.category)) return []
+  const saved = product.genderOptions ?? product.gender_options
+  if (Array.isArray(saved)) {
+    return saved.filter((opt) => GENDER_OPTIONS.includes(opt))
+  }
+  if (isSaunaMizunoProduct(product)) return []
+  return [...GENDER_OPTIONS]
 }
 
 export function getGenderOptionsForProduct(product) {
-  if (!shouldShowGenderOption(product)) return []
+  if (!product || !isGenderCategory(product.category)) return []
+
   const saved = product.genderOptions ?? product.gender_options
-  if (Array.isArray(saved) && saved.length > 0) return saved
+  if (Array.isArray(saved)) {
+    return saved.filter((opt) => GENDER_OPTIONS.includes(opt))
+  }
+
+  // Legado: produtos sem gender_options no banco
+  if (isSaunaMizunoProduct(product)) return []
   return [...GENDER_OPTIONS]
+}
+
+export function shouldShowGenderOption(product) {
+  return getGenderOptionsForProduct(product).length > 0
 }
 
 export function genderLabel(option) {

@@ -9,7 +9,12 @@ import {
 import { useAdminAuth } from '../context/AdminAuthContext'
 import { useProducts } from '../context/ProductsContext'
 import { getDefaultEmbroideryPrice, FAIXA_EMBROIDERY_OPTIONS } from '../utils/embroidery'
-import { isGenderCategory, GENDER_OPTIONS, genderLabel } from '../utils/productOptions'
+import {
+  isGenderCategory,
+  GENDER_OPTIONS,
+  genderLabel,
+  getInitialGenderOptionsForAdmin,
+} from '../utils/productOptions'
 
 const categoryOptions = [
   { value: 'judogi', label: 'Judogi' },
@@ -96,6 +101,7 @@ function ProductForm({ initial, onSave, onCancel, title }) {
       embroideryPrices: embroideryState.embroideryPrices,
       sizesText: Array.isArray(initial?.sizes) ? initial.sizes.join(', ') : '',
       colorsText: Array.isArray(initial?.colors) ? initial.colors.join(', ') : '',
+      genderOptions: getInitialGenderOptionsForAdmin(initial || { category }),
     }
   })
 
@@ -200,7 +206,7 @@ function ProductForm({ initial, onSave, onCancel, title }) {
       colors: colors?.length ? colors : undefined,
       embroidery: embroideryVal?.length ? embroideryVal : undefined,
       embroideryPrices: Object.keys(embroideryPrices).length ? embroideryPrices : undefined,
-      genderOptions: isGenderProduct ? [...GENDER_OPTIONS] : undefined,
+      genderOptions: isGenderProduct ? form.genderOptions : undefined,
     }
     try {
       const result = await onSave(product, orderedMedia)
@@ -274,7 +280,14 @@ function ProductForm({ initial, onSave, onCancel, title }) {
                       return { ...next, ...defaultFaixaEmbroideryState() }
                     }
                     if (category !== 'faixas' && category !== 'judogi') {
-                      return { ...next, embroidery: [], embroideryPrices: {} }
+                      next.embroidery = []
+                      next.embroideryPrices = {}
+                    }
+                    if (isGenderCategory(category) && !isGenderCategory(prev.category)) {
+                      next.genderOptions = [...GENDER_OPTIONS]
+                    }
+                    if (!isGenderCategory(category)) {
+                      next.genderOptions = []
                     }
                     return next
                   })
@@ -480,18 +493,34 @@ function ProductForm({ initial, onSave, onCancel, title }) {
                 Gêneros no site
               </label>
               <p className="text-xs text-kuro/45 mb-3 leading-relaxed">
-                O cliente escolhe uma opção na página do produto antes de adicionar ao carrinho.
+                Marque quais opções o cliente pode escolher na página do produto. Desmarque todas para ocultar o seletor de gênero.
               </p>
               <div className="flex flex-wrap gap-2">
                 {GENDER_OPTIONS.map((opt) => (
-                  <span
+                  <button
                     key={opt}
-                    className="min-h-[44px] inline-flex items-center px-4 py-2.5 rounded-lg text-xs font-medium bg-kuro text-shiro shadow-md"
+                    type="button"
+                    onClick={() => toggleArrayItem('genderOptions', opt)}
+                    className={`min-h-[44px] px-4 py-2.5 rounded-lg text-xs font-medium transition-all touch-manipulation ${
+                      form.genderOptions.includes(opt)
+                        ? 'bg-kuro text-shiro shadow-md'
+                        : 'bg-shiro text-kuro/60 border border-washi-dark hover:bg-kuro/5'
+                    }`}
                   >
                     {genderLabel(opt)}
-                  </span>
+                  </button>
                 ))}
               </div>
+              {form.genderOptions.length === 0 && (
+                <p className="text-xs text-amber-700/80 mt-2">
+                  Nenhum gênero será exibido no site para este produto.
+                </p>
+              )}
+              {form.genderOptions.length === 1 && (
+                <p className="text-xs text-kuro/45 mt-2">
+                  Apenas &quot;{genderLabel(form.genderOptions[0])}&quot; aparecerá na loja.
+                </p>
+              )}
             </div>
           )}
           </div>

@@ -188,7 +188,7 @@ export function ProductsProvider({ children }) {
       colors: colors?.length ? colors : null,
       embroidery: embroidery?.length ? embroidery : null,
       embroidery_prices: embroideryPrices && Object.keys(embroideryPrices).length ? embroideryPrices : null,
-      gender_options: genderOptions?.length ? genderOptions : null,
+      gender_options: Array.isArray(genderOptions) ? genderOptions : null,
       available: available !== false,
     }
     const { error } = await supabase.from('products').insert(row)
@@ -233,7 +233,7 @@ export function ProductsProvider({ children }) {
       embroidery_prices: updates.embroideryPrices && Object.keys(updates.embroideryPrices).length
         ? updates.embroideryPrices
         : null,
-      gender_options: updates.genderOptions?.length ? updates.genderOptions : null,
+      gender_options: Array.isArray(updates.genderOptions) ? updates.genderOptions : null,
     }
     if (typeof updates.available === 'boolean') {
       row.available = updates.available
