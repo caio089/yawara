@@ -9,19 +9,12 @@ const ambassador = {
   image: '/images/rafaela-silva.png',
 }
 
-const sponsored = [
+const sponsoredTop = [
   {
     name: 'Sarah Souza',
     role: 'Patrocinada',
     club: 'Esporte Clube Pinheiros',
     image: '/images/sarah-souza.png',
-    imagePosition: 'center',
-  },
-  {
-    name: 'Sarah Mendes',
-    role: 'Patrocinada',
-    club: 'GNU',
-    image: '/images/sarah-mendes.png',
     imagePosition: 'center',
   },
   {
@@ -36,6 +29,9 @@ const sponsored = [
     club: 'Clube Paineiras do Morumby',
     image: '/images/guilherme-oliveira.png',
   },
+]
+
+const sponsoredBottom = [
   {
     name: 'Marcelo Vicentini',
     role: 'Patrocinado',
@@ -90,7 +86,7 @@ const partners = [
 ]
 
 const stats = [
-  { icon: Trophy, value: '6', label: 'Patrocinados' },
+  { icon: Trophy, value: '5', label: 'Patrocinados' },
   { icon: Users, value: '6', label: 'Parceiros' },
   { icon: Star, value: '1', label: 'Embaixadora' },
 ]
@@ -336,10 +332,17 @@ export default function Partners() {
             <div className="w-12 h-0.5 bg-aka mx-auto mt-4" />
           </motion.div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
-            {sponsored.map((person, i) => (
-              <PersonCard key={person.name} person={person} index={i} />
-            ))}
+          <div className="flex flex-col gap-6 sm:gap-8 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              {sponsoredTop.map((person, i) => (
+                <PersonCard key={person.name} person={person} index={i} />
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-4 sm:gap-6 max-w-xl sm:max-w-2xl mx-auto w-full">
+              {sponsoredBottom.map((person, i) => (
+                <PersonCard key={person.name} person={person} index={i + 3} />
+              ))}
+            </div>
           </div>
         </div>
       </section>

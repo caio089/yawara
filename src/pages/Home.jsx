@@ -144,7 +144,7 @@ export default function Home() {
               disableRemotePlayback
               className="hero-video w-full h-full object-cover opacity-80 pointer-events-none"
               style={{ objectFit: 'cover' }}
-              src="/videos/video yawara.mp4"
+              src="/videos/yawara-hero.mov"
             />
           </motion.div>
           <div className="absolute inset-0 bg-gradient-to-b from-kuro/25 via-kuro/35 to-kuro" />
