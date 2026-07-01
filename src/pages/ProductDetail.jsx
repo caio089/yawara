@@ -8,24 +8,11 @@ import { getEmbroideryExtra, faixaUsesFixedBordadoBase, getFaixaBordadoBasePrice
 import { shouldShowGenderOption, getGenderOptionsForProduct, genderLabel } from '../utils/productOptions'
 import ProductCard from '../components/ProductCard'
 
-const categoryLabels = {
-  judogi: 'Judogi',
-  faixas: 'Faixa',
-  bolsa: 'Bolsa',
-  chinelo: 'Chinelo',
-  garrafa: 'Garrafa',
-  sobretudo: 'Sobretudo',
-  conjunto: 'Conjunto',
-  caneca: 'Caneca',
-  livros: 'Livro',
-  diversos: 'Diversos',
-}
-
 export default function ProductDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { addItem } = useCart()
-  const { products } = useProducts()
+  const { products, getCategoryLabel } = useProducts()
   const [added, setAdded] = useState(false)
 
   const product = products.find((p) => p.id === Number(id))
@@ -90,7 +77,7 @@ export default function ProductDetail() {
   }
 
   const specs = [
-    { icon: Package, label: 'Categoria', value: categoryLabels[product.category] || product.category },
+    { icon: Package, label: 'Categoria', value: getCategoryLabel(product.category) },
     ...(product.sizes ? [{ icon: Ruler, label: 'Tamanhos', value: product.sizes.join(', ') }] : []),
     ...(product.colors ? [{ icon: Palette, label: 'Cores', value: product.colors.join(', ') }] : []),
     ...(product.embroidery ? [{ icon: Scissors, label: 'Bordado', value: product.embroidery.join(', ') }] : []),
@@ -176,7 +163,7 @@ export default function ProductDetail() {
             className="flex flex-col justify-center py-4 pt-6 sm:pt-8 overflow-visible"
           >
             <p className="text-aka text-xs tracking-[0.3em] uppercase font-medium mb-2 pl-[0.2em]">
-              {categoryLabels[product.category] || product.category}
+              {getCategoryLabel(product.category)}
             </p>
 
             <h1 className="text-3xl sm:text-4xl font-bold text-kuro leading-tight mb-1 break-words">

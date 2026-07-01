@@ -4,10 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Package, PackageCheck, Receipt, DollarSign, Plus, Pencil,
   Trash2, Eye, EyeOff, LogOut, X, Save, Search, Upload, Image, Copy,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Trophy, FolderOpen,
 } from 'lucide-react'
 import { useAdminAuth } from '../context/AdminAuthContext'
 import { useProducts } from '../context/ProductsContext'
+import SponsoredAdmin from '../components/admin/SponsoredAdmin'
+import CategoriesAdmin from '../components/admin/CategoriesAdmin'
 import { getDefaultEmbroideryPrice, FAIXA_EMBROIDERY_OPTIONS } from '../utils/embroidery'
 import {
   isGenderCategory,
@@ -15,19 +17,6 @@ import {
   genderLabel,
   getInitialGenderOptionsForAdmin,
 } from '../utils/productOptions'
-
-const categoryOptions = [
-  { value: 'judogi', label: 'Judogi' },
-  { value: 'faixas', label: 'Faixas' },
-  { value: 'bolsa', label: 'Bolsa' },
-  { value: 'chinelo', label: 'Chinelo' },
-  { value: 'garrafa', label: 'Garrafa' },
-  { value: 'sobretudo', label: 'Sobretudo' },
-  { value: 'conjunto', label: 'Conjunto' },
-  { value: 'caneca', label: 'Caneca' },
-  { value: 'livros', label: 'Livros' },
-  { value: 'diversos', label: 'Diversos' },
-]
 
 const JUDOGI_SIZES = ['1,50', '1,55', '1,60', '1,65', '1,70', '1,75', '1,80', 'Enviar medidas via WhatsApp']
 const JUDOGI_COLORS = ['Azul', 'Branco']
@@ -80,12 +69,13 @@ function buildInitialMediaItems(initial) {
 }
 
 function ProductForm({ initial, onSave, onCancel, title }) {
+  const { categoryOptions } = useProducts()
   const fileInputRef = useRef(null)
   const [mediaItems, setMediaItems] = useState(() => buildInitialMediaItems(initial))
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [form, setForm] = useState(() => {
-    const category = initial?.category || 'judogi'
+    const category = initial?.category || categoryOptions[0]?.value || 'judogi'
     const embroideryState = buildInitialEmbroideryState(initial)
     return {
       name: initial?.name || '',
@@ -602,6 +592,7 @@ export default function AdminDashboard() {
   } = useProducts()
 
   const [search, setSearch] = useState('')
+  const [activeTab, setActiveTab] = useState('products')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
   const [duplicatingProduct, setDuplicatingProduct] = useState(null)
@@ -644,6 +635,41 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8">
+        <div className="flex gap-2 mb-6 sm:mb-8 p-1 bg-shiro border border-washi-dark rounded-xl w-full sm:w-auto sm:inline-flex">
+          <button
+            type="button"
+            onClick={() => setActiveTab('products')}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+              activeTab === 'products' ? 'bg-kuro text-shiro shadow-md' : 'text-kuro/50 hover:text-kuro hover:bg-washi'
+            }`}
+          >
+            <Package size={16} />
+            Produtos
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('categories')}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+              activeTab === 'categories' ? 'bg-kuro text-shiro shadow-md' : 'text-kuro/50 hover:text-kuro hover:bg-washi'
+            }`}
+          >
+            <FolderOpen size={16} />
+            Categorias
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('sponsored')}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+              activeTab === 'sponsored' ? 'bg-kuro text-shiro shadow-md' : 'text-kuro/50 hover:text-kuro hover:bg-washi'
+            }`}
+          >
+            <Trophy size={16} />
+            Patrocinados
+          </button>
+        </div>
+
+        {activeTab === 'products' && (
+        <>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-10">
           {stats.map((stat) => {
             const Icon = stat.icon
@@ -757,6 +783,12 @@ export default function AdminDashboard() {
             </div>
           )}
         </motion.div>
+        </>
+        )}
+
+        {activeTab === 'categories' && <CategoriesAdmin />}
+
+        {activeTab === 'sponsored' && <SponsoredAdmin />}
       </main>
 
       <AnimatePresence>

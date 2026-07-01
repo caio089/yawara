@@ -1,9 +1,19 @@
-import { createContext, useContext, useState, useLayoutEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useLayoutEffect, useCallback, useMemo } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
-import { categories } from '../data/products'
+import { categories as fallbackCategories } from '../data/products'
 
 const ProductsContext = createContext()
 const configured = isSupabaseConfigured()
+const ALL_CATEGORY = { id: 'todos', name: 'Todos', nameJp: '全て' }
+
+function normalizeCategoryRow(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    nameJp: row.name_jp ?? row.nameJp ?? '',
+    sortOrder: row.sort_order ?? row.sortOrder ?? 0,
+  }
+}
 
 function formatMutationError(error) {
   const msg = error?.message || 'Não foi possível salvar no Supabase.'
@@ -12,6 +22,9 @@ function formatMutationError(error) {
   }
   if (msg.includes('gender_options')) {
     return 'A coluna gender_options não existe no banco. Execute scripts/migrate-columns.sql no SQL Editor do Supabase.'
+  }
+  if (msg.includes('product_categories')) {
+    return 'A tabela product_categories não existe no banco. Execute scripts/migrate-product-categories.sql no SQL Editor do Supabase.'
   }
   return msg
 }
@@ -51,7 +64,42 @@ function normalizeProduct(row) {
 
 export function ProductsProvider({ children }) {
   const [products, setProducts] = useState([])
+  const [productCategories, setProductCategories] = useState([])
   const [loading, setLoading] = useState(true)
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
+
+  const fetchCategories = useCallback(async () => {
+    if (!configured) {
+      setProductCategories(
+        fallbackCategories
+          .filter((c) => c.id !== 'todos')
+          .map((c, i) => ({ id: c.id, name: c.name, nameJp: c.nameJp || '', sortOrder: i }))
+      )
+      setCategoriesLoading(false)
+      return
+    }
+    setCategoriesLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('product_categories')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .order('id', { ascending: true })
+      if (!error && data?.length) {
+        setProductCategories(data.map(normalizeCategoryRow))
+      } else if (!error) {
+        setProductCategories(
+          fallbackCategories
+            .filter((c) => c.id !== 'todos')
+            .map((c, i) => ({ id: c.id, name: c.name, nameJp: c.nameJp || '', sortOrder: i }))
+        )
+      } else {
+        setProductCategories([])
+      }
+    } finally {
+      setCategoriesLoading(false)
+    }
+  }, [])
 
   const fetchProducts = useCallback(async () => {
     if (!configured) {
@@ -76,8 +124,82 @@ export function ProductsProvider({ children }) {
   }, [])
 
   useLayoutEffect(() => {
+    fetchCategories()
     fetchProducts()
-  }, [fetchProducts])
+  }, [fetchCategories, fetchProducts])
+
+  const categories = useMemo(
+    () => [ALL_CATEGORY, ...productCategories.map((c) => ({ id: c.id, name: c.name, nameJp: c.nameJp }))],
+    [productCategories]
+  )
+
+  const categoryOptions = useMemo(
+    () => productCategories.map((c) => ({ value: c.id, label: c.name })),
+    [productCategories]
+  )
+
+  const getCategoryLabel = useCallback(
+    (categoryId) => {
+      const found = productCategories.find((c) => c.id === categoryId)
+      return found?.name || categoryId || ''
+    },
+    [productCategories]
+  )
+
+  const countProductsInCategory = useCallback(
+    (categoryId) => products.filter((p) => p.category === categoryId).length,
+    [products]
+  )
+
+  const addCategory = async ({ id, name, nameJp, sortOrder }) => {
+    if (!configured) {
+      setProductCategories((prev) => [...prev, { id, name, nameJp: nameJp || '', sortOrder: sortOrder ?? 0 }])
+      return { success: true }
+    }
+    const { error } = await supabase.from('product_categories').insert({
+      id,
+      name,
+      name_jp: nameJp || null,
+      sort_order: sortOrder ?? 0,
+    })
+    if (error) return { success: false, error: formatMutationError(error) }
+    await fetchCategories()
+    return { success: true }
+  }
+
+  const updateCategory = async (id, { name, nameJp, sortOrder }) => {
+    if (!configured) {
+      setProductCategories((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, name, nameJp: nameJp || '', sortOrder: sortOrder ?? 0 } : c))
+      )
+      return { success: true }
+    }
+    const { error } = await supabase
+      .from('product_categories')
+      .update({
+        name,
+        name_jp: nameJp || null,
+        sort_order: sortOrder ?? 0,
+      })
+      .eq('id', id)
+    if (error) return { success: false, error: formatMutationError(error) }
+    await fetchCategories()
+    return { success: true }
+  }
+
+  const deleteCategory = async (id) => {
+    if (countProductsInCategory(id) > 0) {
+      return { success: false, error: 'Existem produtos nesta categoria. Mova ou exclua os produtos antes.' }
+    }
+    if (!configured) {
+      setProductCategories((prev) => prev.filter((c) => c.id !== id))
+      return { success: true }
+    }
+    const { error } = await supabase.from('product_categories').delete().eq('id', id)
+    if (error) return { success: false, error: formatMutationError(error) }
+    await fetchCategories()
+    return { success: true }
+  }
 
   const activeProducts = products.filter((p) => p.available)
 
@@ -293,9 +415,18 @@ export function ProductsProvider({ children }) {
         products,
         activeProducts,
         categories,
+        productCategories,
+        categoryOptions,
+        categoriesLoading,
+        getCategoryLabel,
+        countProductsInCategory,
+        addCategory,
+        updateCategory,
+        deleteCategory,
         totalValueProducts,
         loading,
         fetchProducts,
+        fetchCategories,
         addProduct,
         updateProduct,
         deleteProduct,
