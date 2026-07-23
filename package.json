@@ -10,7 +10,9 @@
     "audit:supabase": "node scripts/audit-supabase.mjs",
     "backfill:embroidery": "node scripts/backfill-embroidery-prices.mjs",
     "backfill:embroidery:dry": "node scripts/backfill-embroidery-prices.mjs --dry-run",
-    "cleanup:storage": "node scripts/cleanup-orphan-storage.mjs"
+    "cleanup:storage": "node scripts/cleanup-orphan-storage.mjs",
+    "migrate:cloudinary": "node scripts/migrate-to-cloudinary.mjs",
+    "migrate:cloudinary:dry": "node scripts/migrate-to-cloudinary.mjs --dry-run"
   },
   "repository": {
     "type": "git",

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useLayoutEffect, useCallback, useMemo } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { uploadToCloudinary, isCloudinaryConfigured } from '../lib/cloudinary'
 import { categories as fallbackCategories } from '../data/products'
 
 const ProductsContext = createContext()
@@ -205,55 +206,10 @@ export function ProductsProvider({ children }) {
 
   const uploadImage = async (file) => {
     if (!configured) return null
-    const ext = file.name.split('.').pop()
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-    const { error } = await supabase.storage
-      .from('product-images')
-      .upload(fileName, file, { cacheControl: '3600', upsert: false })
-    if (error) throw error
-    const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
-    return data.publicUrl
-  }
-
-  const getStoragePathsFromUrls = (urls) => {
-    if (!urls?.length) return []
-    return (Array.isArray(urls) ? urls : [urls])
-      .filter(Boolean)
-      .map((url) => {
-        const parts = String(url).split('/product-images/')
-        return parts[1]?.split('?')[0]?.trim()
-      })
-      .filter(Boolean)
-  }
-
-  const getProductImageUrls = (product) => {
-    if (!product) return []
-    return product.images?.length ? product.images : (product.image ? [product.image] : [])
-  }
-
-  const imageUrlsFromField = (imageField) => {
-    if (!imageField) return []
-    const { image, images } = parseImage(imageField)
-    return images.length ? images : (image ? [image] : [])
-  }
-
-  const storageKeyFromUrl = (url) => {
-    const parts = String(url).split('/product-images/')
-    return parts[1]?.split('?')[0]?.trim() || String(url)
-  }
-
-  const removeStorageUrls = async (urls) => {
-    if (!configured || !urls?.length) return
-    const paths = getStoragePathsFromUrls(urls)
-    if (paths.length) {
-      await supabase.storage.from('product-images').remove(paths)
+    if (!isCloudinaryConfigured()) {
+      throw new Error('Cloudinary não configurado. Defina VITE_CLOUDINARY_CLOUD_NAME e VITE_CLOUDINARY_UPLOAD_PRESET.')
     }
-  }
-
-  const removeOrphanedProductImages = async (previousUrls, nextUrls) => {
-    const nextKeys = new Set(nextUrls.map(storageKeyFromUrl))
-    const orphaned = previousUrls.filter((url) => !nextKeys.has(storageKeyFromUrl(url)))
-    if (orphaned.length) await removeStorageUrls(orphaned)
+    return uploadToCloudinary(file, 'yawara/products')
   }
 
   const imageFieldFromOrderedLocal = (ordered) => {
@@ -339,9 +295,6 @@ export function ProductsProvider({ children }) {
       )
       return { success: true }
     }
-    const existingProduct = products.find((p) => p.id === id)
-    const previousImageUrls = getProductImageUrls(existingProduct)
-
     const row = {
       name: updates.name,
       name_jp: updates.nameJp,
@@ -372,21 +325,15 @@ export function ProductsProvider({ children }) {
     const { error } = await supabase.from('products').update(row).eq('id', id)
     if (error) return { success: false, error: formatMutationError(error) }
 
-    const nextImageUrls = row.image !== undefined
-      ? imageUrlsFromField(row.image)
-      : previousImageUrls
-    await removeOrphanedProductImages(previousImageUrls, nextImageUrls)
     await fetchProducts()
     return { success: true }
   }
 
   const deleteProduct = async (id) => {
-    const product = products.find((p) => p.id === id)
     if (!configured) {
       setProducts((prev) => prev.filter((p) => p.id !== id))
       return
     }
-    await removeStorageUrls(getProductImageUrls(product))
     const { error } = await supabase.from('products').delete().eq('id', id)
     if (!error) await fetchProducts()
   }
