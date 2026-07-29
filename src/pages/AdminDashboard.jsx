@@ -4,11 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Package, PackageCheck, Receipt, DollarSign, Plus, Pencil,
   Trash2, Eye, EyeOff, LogOut, X, Save, Search, Upload, Image, Copy,
-  ChevronLeft, ChevronRight, Trophy, FolderOpen,
+  ChevronLeft, ChevronRight, Trophy, FolderOpen, Handshake,
 } from 'lucide-react'
 import { useAdminAuth } from '../context/AdminAuthContext'
 import { useProducts } from '../context/ProductsContext'
 import SponsoredAdmin from '../components/admin/SponsoredAdmin'
+import PartnersAdmin from '../components/admin/PartnersAdmin'
 import CategoriesAdmin from '../components/admin/CategoriesAdmin'
 import { getDefaultEmbroideryPrice, FAIXA_EMBROIDERY_OPTIONS } from '../utils/embroidery'
 import {
@@ -635,7 +636,7 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8">
-        <div className="flex gap-2 mb-6 sm:mb-8 p-1 bg-shiro border border-washi-dark rounded-xl w-full sm:w-auto sm:inline-flex">
+        <div className="flex gap-2 mb-6 sm:mb-8 p-1 bg-shiro border border-washi-dark rounded-xl w-full overflow-x-auto sm:w-auto sm:inline-flex">
           <button
             type="button"
             onClick={() => setActiveTab('products')}
@@ -665,6 +666,16 @@ export default function AdminDashboard() {
           >
             <Trophy size={16} />
             Patrocinados
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('partners')}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+              activeTab === 'partners' ? 'bg-kuro text-shiro shadow-md' : 'text-kuro/50 hover:text-kuro hover:bg-washi'
+            }`}
+          >
+            <Handshake size={16} />
+            Parceiros
           </button>
         </div>
 
@@ -789,6 +800,8 @@ export default function AdminDashboard() {
         {activeTab === 'categories' && <CategoriesAdmin />}
 
         {activeTab === 'sponsored' && <SponsoredAdmin />}
+
+        {activeTab === 'partners' && <PartnersAdmin />}
       </main>
 
       <AnimatePresence>

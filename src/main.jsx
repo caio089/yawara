@@ -6,6 +6,7 @@ import { CartProvider } from './context/CartContext'
 import { AdminAuthProvider } from './context/AdminAuthContext'
 import { ProductsProvider } from './context/ProductsContext'
 import { SponsoredProvider } from './context/SponsoredContext'
+import { PartnersProvider } from './context/PartnersContext'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -14,9 +15,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <AdminAuthProvider>
         <ProductsProvider>
           <SponsoredProvider>
-            <CartProvider>
-              <App />
-            </CartProvider>
+            <PartnersProvider>
+              <CartProvider>
+                <App />
+              </CartProvider>
+            </PartnersProvider>
           </SponsoredProvider>
         </ProductsProvider>
       </AdminAuthProvider>

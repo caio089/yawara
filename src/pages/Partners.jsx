@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Trophy, Users, Star, Camera } from 'lucide-react'
 import { useSponsored } from '../context/SponsoredContext'
+import { useBrandPartners } from '../context/PartnersContext'
 
 const ambassador = {
   name: 'Rafaela Silva',
@@ -53,48 +54,9 @@ function athleteToCard(athlete) {
   }
 }
 
-const partners = [
-  {
-    name: 'Moacir Mendes',
-    role: 'Parceiro',
-    club: 'Alliance Canoas Norte',
-    image: '/images/moacir-mendes.png',
-  },
-  {
-    name: 'Tiago Camilo',
-    role: 'Amigo da Marca',
-    club: 'Instituto Tiago Camilo',
-    image: '/images/thiago-camilo.png',
-  },
-  {
-    name: 'João Derly',
-    role: 'Parceiro',
-    club: 'Sogipa',
-    image: '/images/joao-derly.png',
-  },
-  {
-    name: 'Chrystian Silva',
-    role: 'Parceiro',
-    club: 'Clube Paineiras do Morumby',
-    image: '/images/chrystian-silva.png',
-  },
-  {
-    name: 'Thiago de Remédios',
-    role: 'Parceiro',
-    club: 'Estrela de Davi - PA',
-    image: '/images/thiago-remedios.png',
-  },
-  {
-    name: 'Cauã Schramm',
-    role: 'Parceiro',
-    club: 'GNU',
-    image: '/images/caua-schramm.png',
-  },
-]
-
 const stats = [
   { icon: Trophy, valueKey: 'sponsored' },
-  { icon: Users, value: '6', label: 'Parceiros' },
+  { icon: Users, valueKey: 'partners' },
   { icon: Star, value: '1', label: 'Embaixadora' },
 ]
 
@@ -176,16 +138,26 @@ function SponsoredAthletesGrid({ athletes, loading }) {
 
 export default function Partners() {
   const { athletes, loading } = useSponsored()
+  const { partners, loading: partnersLoading } = useBrandPartners()
 
   const displayAthletes = athletes.length
     ? sortAthletesForDisplay(athletes).map(athleteToCard)
     : (!loading ? FALLBACK_SPONSORED : [])
 
+  const displayPartners = [...partners].sort((a, b) => {
+    if ((a.sortOrder ?? 0) !== (b.sortOrder ?? 0)) return (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+    return (a.id ?? 0) - (b.id ?? 0)
+  })
+
   const sponsoredCount = displayAthletes.length
+  const partnersCount = displayPartners.length
 
   const headerStats = stats.map((stat) => {
     if (stat.valueKey === 'sponsored') {
       return { ...stat, value: String(sponsoredCount), label: 'Patrocinados' }
+    }
+    if (stat.valueKey === 'partners') {
+      return { ...stat, value: String(partnersCount), label: 'Parceiros' }
     }
     return stat
   })
@@ -322,9 +294,12 @@ export default function Partners() {
           </motion.div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto">
-            {partners.map((person, i) => (
+            {partnersLoading && !displayPartners.length ? (
+              <p className="col-span-full text-center text-shiro/40 text-sm py-8">Carregando parceiros...</p>
+            ) : null}
+            {displayPartners.map((person, i) => (
               <motion.div
-                key={person.name}
+                key={person.id ?? person.name}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
