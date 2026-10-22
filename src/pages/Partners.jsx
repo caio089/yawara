@@ -2,14 +2,7 @@ import { motion } from 'framer-motion'
 import { Trophy, Users, Star, Camera } from 'lucide-react'
 import { useSponsored } from '../context/SponsoredContext'
 import { useBrandPartners } from '../context/PartnersContext'
-
-const ambassador = {
-  name: 'Rafaela Silva',
-  role: 'Embaixadora',
-  club: 'Reação',
-  description: 'Campeã Olímpica e Bicampeã Mundial, Rafaela Silva é a embaixadora oficial da Yawara Japan. Ela representa a força, a garra e a excelência do judô brasileiro no mundo.',
-  image: '/images/rafaela-silva.png',
-}
+import { useAmbassador } from '../context/AmbassadorContext'
 
 const FALLBACK_SPONSORED_TOP = [
   {
@@ -139,6 +132,7 @@ function SponsoredAthletesGrid({ athletes, loading }) {
 export default function Partners() {
   const { athletes, loading } = useSponsored()
   const { partners, loading: partnersLoading } = useBrandPartners()
+  const { ambassador } = useAmbassador()
 
   const displayAthletes = athletes.length
     ? sortAthletesForDisplay(athletes).map(athleteToCard)
@@ -255,18 +249,22 @@ export default function Partners() {
                 <div className="absolute inset-0 seigaiha-pattern opacity-10" />
                 <div className="relative">
                   <span className="inline-block bg-gradient-to-r from-kin to-kin-light text-kuro text-[10px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-full mb-4">
-                    Embaixadora
+                    {ambassador.role || 'Embaixadora'}
                   </span>
                   <h3 className="text-3xl sm:text-4xl font-bold text-shiro mb-2">{ambassador.name}</h3>
                   {ambassador.club && (
                     <p className="text-shiro/70 text-sm font-medium uppercase tracking-wider mb-3">{ambassador.club}</p>
                   )}
                   <div className="w-10 h-0.5 bg-kin mb-5" />
-                  <p className="text-shiro/50 text-sm leading-relaxed">{ambassador.description}</p>
-                  <div className="flex items-center gap-2 mt-6">
-                    <Star size={14} className="text-kin" />
-                    <span className="text-xs text-kin font-medium uppercase tracking-wider">Campeã Olímpica · Bicampeã Mundial</span>
-                  </div>
+                  {ambassador.description && (
+                    <p className="text-shiro/50 text-sm leading-relaxed">{ambassador.description}</p>
+                  )}
+                  {ambassador.highlight && (
+                    <div className="flex items-center gap-2 mt-6">
+                      <Star size={14} className="text-kin" />
+                      <span className="text-xs text-kin font-medium uppercase tracking-wider">{ambassador.highlight}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

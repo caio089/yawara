@@ -36,7 +36,13 @@ export function AdminAuthProvider({ children }) {
       return { success: false, error: 'E-mail ou senha incorretos.' }
     }
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) return { success: false, error: error.message }
+    if (error) {
+      const raw = (error.message || '').toLowerCase()
+      if (raw.includes('invalid login') || raw.includes('invalid credentials')) {
+        return { success: false, error: 'E-mail ou senha incorretos.' }
+      }
+      return { success: false, error: error.message || 'Não foi possível entrar. Tente novamente.' }
+    }
     return { success: true }
   }
 

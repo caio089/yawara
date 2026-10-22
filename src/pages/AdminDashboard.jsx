@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Package, PackageCheck, Receipt, DollarSign, Plus, Pencil,
   Trash2, Eye, EyeOff, LogOut, X, Save, Search, Upload, Image, Copy,
-  ChevronLeft, ChevronRight, Trophy, FolderOpen, Handshake,
+  ChevronLeft, ChevronRight, Trophy, FolderOpen, Handshake, Star,
 } from 'lucide-react'
 import { useAdminAuth } from '../context/AdminAuthContext'
 import { useProducts } from '../context/ProductsContext'
 import SponsoredAdmin from '../components/admin/SponsoredAdmin'
 import PartnersAdmin from '../components/admin/PartnersAdmin'
+import AmbassadorAdmin from '../components/admin/AmbassadorAdmin'
 import CategoriesAdmin from '../components/admin/CategoriesAdmin'
 import { getDefaultEmbroideryPrice, FAIXA_EMBROIDERY_OPTIONS } from '../utils/embroidery'
 import {
@@ -677,6 +678,16 @@ export default function AdminDashboard() {
             <Handshake size={16} />
             Parceiros
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('ambassador')}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+              activeTab === 'ambassador' ? 'bg-kuro text-shiro shadow-md' : 'text-kuro/50 hover:text-kuro hover:bg-washi'
+            }`}
+          >
+            <Star size={16} />
+            Embaixadora
+          </button>
         </div>
 
         {activeTab === 'products' && (
@@ -802,6 +813,8 @@ export default function AdminDashboard() {
         {activeTab === 'sponsored' && <SponsoredAdmin />}
 
         {activeTab === 'partners' && <PartnersAdmin />}
+
+        {activeTab === 'ambassador' && <AmbassadorAdmin />}
       </main>
 
       <AnimatePresence>
